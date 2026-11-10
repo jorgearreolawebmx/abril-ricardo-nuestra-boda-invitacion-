@@ -1,6 +1,5 @@
 /*
  * CONFIGURACIÓN DE SUBIDA A GOOGLE DRIVE
- * Después de publicar AppsScript/Code.gs como Aplicación web, pega aquí
- * la URL terminada en /exec. No pongas aquí contraseñas ni claves privadas.
+ * URL de la aplicación web de Google Apps Script.
  */
-window.AR_PHOTO_UPLOAD_URL = '';
+window.AR_PHOTO_UPLOAD_URL = 'https://script.google.com/macros/s/AKfycbzPX1DfaoKlE8VN1pMV86qq2LfuuzX3DXZlpkIQ35IuH1FdcQDR5XYUPZnvXxPOrrfgcw/exec';
