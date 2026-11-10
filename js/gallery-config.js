@@ -4,7 +4,7 @@ window.ABRIL_RICARDO_GALLERY_CONFIG = {
   seed: 'abril-ricardo-2027-real-photos',
   background: {
     src: 'assets/pareja-portada.webp',
-    position: '50% 50%',
+    position: '50% 18%',
     shade: 0.34,
     color: '#e9dfd0'
   },
@@ -44,7 +44,7 @@ window.ABRIL_RICARDO_GALLERY_CONFIG = {
     { src: 'assets/galeria-extra-20.webp', alt: 'Abril y Ricardo — fotografía adicional 20', scale: 1.0 }
   ],
   texts: {
-    title: 'Nuestra galería infinita como nuestro amor',
+    title: '',
     hintMouse: 'Arrastra para recorrer. Usa la rueda para acercarte.',
     hintTouch: 'Desliza para recorrer. Pellizca para acercarte.',
     close: 'Cerrar',
@@ -54,6 +54,8 @@ window.ABRIL_RICARDO_GALLERY_CONFIG = {
     region: 'Galería infinita de Abril y Ricardo'
   },
   space: {
+    // Centra la primera composición en la zona media del espacio generado.
+    start: { x: 15, y: 15, z: 0 },
     grid: [3, 3, 2],
     minSize: 2.0,
     maxSize: 5.6,

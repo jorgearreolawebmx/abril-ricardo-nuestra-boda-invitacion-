@@ -32,66 +32,45 @@
   </video>
   <div class="ambient-wash" aria-hidden="true"></div>
 
-    <!-- Cuenta regresiva compacta, que aparece al comenzar a recorrer la invitación. -->
-    <div class="sticky-countdown" id="stickyCountdown" aria-label="Cuenta regresiva">
-      <div class="sticky-countdown-values">
-        <span><b data-count="days">000</b><small>DÍAS</small></span>
-        <span><b data-count="hours">00</b><small>HRS</small></span>
-        <span><b data-count="minutes">00</b><small>MIN</small></span>
-        <span><b data-count="seconds">00</b><small>SEG</small></span>
-      </div>
-      <button class="sticky-up" type="button" id="stickyTop" aria-label="Volver al inicio">⌃</button>
-    </div>
-
   <main class="invitation" id="invitation" aria-hidden="true">
     <section class="hero" id="inicio">
-      <img class="hero-photo" src="assets/pareja-portada.webp" alt="Abril y Ricardo" fetchpriority="high">
-      <div class="hero-shade"></div>
-      <div class="petals" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
-      <div class="hero-content">
+      <div class="hero-visual">
+        <img class="hero-photo" src="assets/pareja-portada.webp" alt="Abril y Ricardo" fetchpriority="high">
+        <div class="hero-shade" aria-hidden="true"></div>
+        <div class="petals" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
         <p class="hero-title-small">NOS CASAMOS</p>
         <img class="hero-logo" src="assets/logo-abril-ricardo.png" alt="Abril y Ricardo" fetchpriority="high">
-        <div class="hero-rule"><span></span><b>✦</b><span></span></div>
-        <p class="hero-date">05 · AGOSTO · 2027</p>
         <div class="countdown hero-countdown" aria-label="Cuenta regresiva">
           <div><strong data-count="days">000</strong><span>Días</span></div>
           <div><strong data-count="hours">00</strong><span>Horas</span></div>
           <div><strong data-count="minutes">00</strong><span>Min</span></div>
           <div><strong data-count="seconds">00</strong><span>Seg</span></div>
         </div>
+        <a class="scroll-cue" href="#fecha" aria-label="Desliza para descubrir la invitación"><span></span></a>
       </div>
-      <a class="scroll-cue" href="#fecha" aria-label="Desliza para descubrir la invitación"><span></span></a>
     </section>
 
     <section class="section date-section" id="fecha">
       <div class="section-inner">
         <p class="eyebrow">LA FECHA</p>
         <h2>Raspa para revelar</h2>
-        <p class="section-intro">Descubre el día en que comienza nuestra historia como esposos.</p>
-        <div class="scratch-row" aria-label="Raspa los tres círculos para descubrir la fecha">
-          <div class="scratch-card"><span class="scratch-answer">05</span><small>DÍA</small><canvas class="scratch-layer" aria-label="Raspa para revelar el día"></canvas></div>
-          <div class="scratch-card"><span class="scratch-answer">08</span><small>MES</small><canvas class="scratch-layer" aria-label="Raspa para revelar el mes"></canvas></div>
-          <div class="scratch-card"><span class="scratch-answer">27</span><small>AÑO</small><canvas class="scratch-layer" aria-label="Raspa para revelar el año"></canvas></div>
+        <div class="scratch-row" aria-label="Raspa los sellos de cera para descubrir la fecha">
+          <div class="scratch-card"><span class="scratch-answer">05</span><canvas class="scratch-layer" aria-label="Raspa el sello para revelar el día"></canvas><small>DÍA</small></div>
+          <div class="scratch-card"><span class="scratch-answer scratch-answer-month">AGOSTO</span><canvas class="scratch-layer" aria-label="Raspa el sello para revelar el mes"></canvas><small>MES</small></div>
+          <div class="scratch-card"><span class="scratch-answer scratch-answer-year">2027</span><canvas class="scratch-layer" aria-label="Raspa el sello para revelar el año"></canvas><small>AÑO</small></div>
         </div>
-        <p class="scratch-caption">05 · 08 · 2027</p>
-        <div class="date-ticket">
-          <span class="ticket-side">ABRIL & RICARDO</span>
-          <div class="ticket-main"><small>RESERVA LA FECHA</small><strong>¡Nos casamos!</strong><span>Jueves · 5 de agosto de 2027</span><em>12:00 h · Catedral de San Cristóbal Mártir</em></div>
-          <span class="ticket-stamp">A<br>&<br>R</span>
-        </div>
+        <p class="scratch-caption">Empieza por el día</p>
       </div>
     </section>
 
     <section class="section message-section envelope-message-section" id="mensaje">
       <div class="section-inner">
-        <p class="eyebrow">CON MUCHO CARIÑO</p>
-        <p class="section-intro envelope-intro">Hay momentos en la vida que se vuelven inolvidables. Con mucha alegría, queremos compartir el comienzo de esta nueva etapa con las personas que forman parte de nuestra historia.</p>
         <div class="envelope-art-wrap">
           <img class="envelope-art" src="assets/sobre-abierto.webp" alt="Sobre de papel marfil con una carta abierta" loading="lazy">
           <div class="envelope-letter-copy">
-            <h2>A los que hacen que sea fiesta</h2>
-            <p>Nos conocimos subiendo los escalones de cantera de una plaza, cada uno cargando el pastel de un cumpleaños distinto.</p>
-            <p>Sin ustedes esto sería nomás una fecha en el calendario; con ustedes, es nuestra fiesta.</p>
+            <h2>Y entonces, nos encontramos</h2>
+            <p>Fue en Sancris donde la vida decidió cruzar nuestros caminos. No hubo planes ni advertencias, solamente una mirada, una sonrisa y esa extraña sensación de haber encontrado algo especial.</p>
+            <p>Dicen que el amor llega cuando menos lo esperas, y nosotros tuvimos la suerte de encontrarlo en el mismo lugar, al mismo tiempo.</p>
           </div>
         </div>
         <p class="handwritten">Con cariño, Abril &amp; Ricardo.</p>
@@ -130,14 +109,63 @@
         <p class="eyebrow">EL GRAN DÍA</p>
         <h2>Así será nuestro día</h2>
         <p class="section-intro">Un día lleno de momentos especiales para celebrar juntos.</p>
-        <div class="timeline">
-          <div class="timeline-item"><time>12:00</time><span class="timeline-dot">✿</span><div><h3>Ceremonia</h3><p>Uniremos nuestras vidas ante Dios.</p></div></div>
-          <div class="timeline-item"><time>14:00</time><span class="timeline-dot">✿</span><div><h3>Recepción</h3><p>Bienvenida en Salón Uvence.</p></div></div>
-          <div class="timeline-item"><time>14:30</time><span class="timeline-dot">✿</span><div><h3>Cóctel de bienvenida</h3><p>Un momento para saludarnos.</p></div></div>
-          <div class="timeline-item"><time>15:30</time><span class="timeline-dot">✿</span><div><h3>Banquete</h3><p>Compartiremos la mesa y buenos momentos.</p></div></div>
-          <div class="timeline-item"><time>16:30</time><span class="timeline-dot">✿</span><div><h3>Brindis</h3><p>Por el amor y esta nueva etapa.</p></div></div>
-          <div class="timeline-item"><time>17:00</time><span class="timeline-dot">✿</span><div><h3>Primer baile</h3><p>Nuestro primer baile como esposos.</p></div></div>
-          <div class="timeline-item"><time>17:30</time><span class="timeline-dot">✿</span><div><h3>¡Que comience la fiesta!</h3><p>Bailemos y celebremos juntos.</p></div></div>
+        <div class="timeline" aria-label="Programa de la celebración">
+          <div class="timeline-item">
+            <span class="timeline-dot"><img src="assets/sello-cera-ar.webp" alt="" aria-hidden="true"></span>
+            <div class="timeline-copy">
+              <time datetime="12:00">12:00</time>
+              <h3>Ceremonia</h3>
+              <p>Uniremos nuestras vidas ante Dios.</p>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <span class="timeline-dot"><img src="assets/sello-cera-ar.webp" alt="" aria-hidden="true"></span>
+            <div class="timeline-copy">
+              <time datetime="14:00">14:00</time>
+              <h3>Recepción</h3>
+              <p>Bienvenida en Salón Uvence.</p>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <span class="timeline-dot"><img src="assets/sello-cera-ar.webp" alt="" aria-hidden="true"></span>
+            <div class="timeline-copy">
+              <time datetime="14:30">14:30</time>
+              <h3>Cóctel de bienvenida</h3>
+              <p>Un momento para saludarnos.</p>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <span class="timeline-dot"><img src="assets/sello-cera-ar.webp" alt="" aria-hidden="true"></span>
+            <div class="timeline-copy">
+              <time datetime="15:30">15:30</time>
+              <h3>Banquete</h3>
+              <p>Compartiremos la mesa y buenos momentos.</p>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <span class="timeline-dot"><img src="assets/sello-cera-ar.webp" alt="" aria-hidden="true"></span>
+            <div class="timeline-copy">
+              <time datetime="16:30">16:30</time>
+              <h3>Brindis</h3>
+              <p>Por el amor y esta nueva etapa.</p>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <span class="timeline-dot"><img src="assets/sello-cera-ar.webp" alt="" aria-hidden="true"></span>
+            <div class="timeline-copy">
+              <time datetime="17:00">17:00</time>
+              <h3>Primer baile</h3>
+              <p>Nuestro primer baile como esposos.</p>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <span class="timeline-dot"><img src="assets/sello-cera-ar.webp" alt="" aria-hidden="true"></span>
+            <div class="timeline-copy">
+              <time datetime="17:30">17:30</time>
+              <h3>¡Que comience la fiesta!</h3>
+              <p>Bailemos y celebremos juntos.</p>
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -158,13 +186,11 @@
 
     <section class="section gallery-section" id="galeria">
       <div class="section-inner">
-        <p class="eyebrow">RECUERDOS QUE NOS ACOMPAÑAN</p>
         <button class="gallery-photo-launcher" id="openInfiniteGallery" type="button" aria-haspopup="dialog" aria-controls="infiniteGalleryShell" aria-label="Abrir la galería infinita de Abril y Ricardo">
           <img src="assets/gallery-entry-bouquet.webp" alt="Abril y Ricardo juntos, con su ramo de flores en primer plano" loading="lazy">
           <span class="gallery-photo-overlay">
-            <span class="gallery-photo-title">Nuestra galería</span>
-            <span class="gallery-photo-subtitle">Nuestra galería infinita como nuestro amor</span>
-            <span class="gallery-photo-arrow" aria-hidden="true">↗</span>
+            <span class="gallery-photo-title">Galería infinita</span>
+            <span class="gallery-photo-subtitle">Entrar a galería</span>
           </span>
         </button>
       </div>
@@ -172,7 +198,7 @@
 
     <section class="section gifts-section" id="regalo">
       <div class="section-inner">
-        <p class="eyebrow">LO MÁS IMPORTANTE</p>
+        <img class="gift-section-art" src="assets/regalo-botanico.webp" alt="Regalo envuelto en papel kraft con flores y una etiqueta" loading="lazy">
         <h2>Mesa de regalos</h2>
         <div class="gift-card">
           <span class="gift-icon">♡</span>
@@ -184,20 +210,127 @@
 
     <section class="section rsvp-section" id="confirmacion">
       <div class="section-inner">
-        <p class="eyebrow">QUEREMOS CONTAR CONTIGO</p>
-        <h2>Confirma tu asistencia</h2>
-        <p class="section-intro">Nos encantaría contar contigo en este día tan especial. Por favor, confirma tu asistencia por WhatsApp.</p>
-        <div class="rsvp-card">
-          <label for="guestName">Tu nombre</label>
-          <input id="guestName" type="text" autocomplete="name" placeholder="Escribe tu nombre">
-          <p class="rsvp-question">¿Podremos contar contigo?</p>
-          <div class="rsvp-options">
-            <button class="rsvp-option is-selected" type="button" data-rsvp="Sí, asistiré">Sí, asistiré</button>
-            <button class="rsvp-option" type="button" data-rsvp="Lo siento, no podré asistir">No podré asistir</button>
+        <div class="rsvp-card attendance-card">
+          <div class="attendance-switch-row">
+            <span class="attendance-label attendance-label-no">NO PODRÉ</span>
+            <button class="attendance-switch" id="attendanceSwitch" type="button" role="switch" aria-checked="true" aria-label="Cambiar respuesta: actualmente sí asistiré">
+              <img class="attendance-track" src="assets/rsvp-track.webp" alt="" aria-hidden="true">
+              <img class="attendance-knob" src="assets/rsvp-knob.webp" alt="" aria-hidden="true">
+            </button>
+            <span class="attendance-label attendance-label-yes is-active">SÍ, ASISTIRÉ</span>
           </div>
-          <a class="whatsapp-cta" id="rsvpWhatsapp" href="https://wa.me/529613805924?text=Hola%2C%20quiero%20confirmar%20mi%20asistencia%20a%20la%20boda%20de%20Abril%20y%20Ricardo." target="_blank" rel="noopener noreferrer">CONFIRMAR POR WHATSAPP <span>↗</span></a>
-          <p class="contact-line">961 380 5924</p>
+          <p class="attendance-helper" id="attendanceHelper">Puedes cambiar tu respuesta</p>
+          <p class="attendance-message" id="attendanceMessage" aria-live="polite">Qué alegría. Los esperamos.</p>
+          <form class="attendance-form" id="attendanceForm">
+            <div class="attendance-name-field">
+              <label for="attendanceName">TU NOMBRE</label>
+              <input id="attendanceName" name="guestName" type="text" autocomplete="name" maxlength="80" placeholder="Escribe tu nombre completo" required>
+            </div>
+            <button class="attendance-send-button" id="rsvpSubmitButton" type="submit">ENVIAR RESPUESTA <span aria-hidden="true">↗</span></button>
+            <p class="attendance-privacy-note">Tu respuesta se enviará por WhatsApp.</p>
+          </form>
         </div>
+      </div>
+    </section>
+
+    <!-- Cabina fotográfica: marco solo para la muestra; la foto real lleva únicamente el logotipo -->
+    <section class="section photo-booth-section" id="foto-boda" aria-label="Tómate una foto en la boda">
+      <div class="section-inner photo-booth-inner">
+        <header class="photo-booth-heading">
+          <p class="photo-booth-eyebrow">UN RECUERDO PARA COMPARTIR</p>
+          <h2>Tómate una <em>foto</em></h2>
+          <span class="photo-booth-heading-rule" aria-hidden="true"></span>
+          <p class="photo-booth-subtitle">TU FOTO CON EL LOGOTIPO DE LOS NOVIOS</p>
+        </header>
+
+        <div class="photo-booth-frame-wrap" id="photoBoothMockup">
+          <canvas class="photo-booth-canvas" id="photoBoothCanvas" width="1293" height="1217" role="img" aria-label="Ejemplo decorativo de una fotografía dentro del marco floral de la invitación">
+            Ejemplo decorativo de una fotografía dentro del marco floral de la invitación.
+          </canvas>
+          <button class="photo-booth-capture-target" id="takePhotoButton" type="button" aria-label="Tomar una foto o elegir una fotografía del teléfono">
+            <span class="visually-hidden">Tomar la foto</span>
+          </button>
+        </div>
+        <div class="photo-booth-result-wrap" id="photoBoothResultWrap" hidden>
+          <canvas class="photo-booth-result-canvas" id="photoBoothResultCanvas" width="1200" height="900" role="img" aria-label="Tu fotografía con el logotipo de Abril y Ricardo, sin marco decorativo"></canvas>
+        </div>
+
+        <div class="photo-booth-couple">
+          <p>EN LA BODA DE</p>
+          <h3>Abril &amp; Ricardo</h3>
+          <span>5 DE AGOSTO DE 2027</span>
+        </div>
+
+        <input class="photo-booth-file-input" id="photoBoothInput" type="file" accept="image/*" capture="user" aria-label="Tomar o seleccionar una fotografía">
+
+        <button class="photo-booth-main-cta" id="photoBoothMainCta" type="button">
+          <span aria-hidden="true">◎</span> TOMAR LA FOTO
+        </button>
+        <p class="photo-booth-instruction">Toca «Tomar la foto» y permite el acceso a la cámara de tu teléfono.</p>
+        <p class="photo-booth-description">Tómate una foto y añadiremos discretamente el logotipo de Abril & Ricardo en la parte inferior. Podrás descargarla sin marcos ni adornos.</p>
+
+        <div class="photo-booth-actions" id="photoBoothActions" hidden>
+          <p class="photo-booth-preview-label">TU RECUERDO ESTÁ LISTO</p>
+          <p class="photo-booth-status" id="photoBoothStatus" role="status" aria-live="polite">Así quedará tu fotografía con el logotipo blanco de los novios, sin marco decorativo.</p>
+          <div class="photo-booth-action-buttons">
+            <button class="photo-booth-primary" id="savePhotoButton" type="button">GUARDAR EN EL ÁLBUM</button>
+            <button class="photo-booth-secondary" id="downloadPhotoButton" type="button">DESCARGAR FOTO</button>
+          </div>
+          <div class="photo-booth-reset-row">
+            <button class="photo-booth-text-button" id="retakePhotoButton" type="button">VOLVER A TOMAR</button>
+            <button class="photo-booth-text-button photo-booth-delete" id="deletePhotoButton" type="button">ELIMINAR FOTO</button>
+          </div>
+        </div>
+        <p class="photo-booth-status photo-booth-status-idle" id="photoBoothIdleStatus" role="status" aria-live="polite">Aquí aparecerá tu fotografía. Toca el botón para tomarla.</p>
+
+        <div class="ar-camera-modal" id="arPhotoCameraModal" hidden aria-hidden="true">
+          <div class="ar-camera-dialog" role="dialog" aria-modal="true" aria-labelledby="arPhotoCameraTitle">
+            <div class="ar-camera-topbar">
+              <h3 id="arPhotoCameraTitle">Tómate una foto</h3>
+              <button type="button" class="ar-camera-close" id="arPhotoCameraClose" aria-label="Cerrar cámara">×</button>
+            </div>
+            <div class="ar-camera-view">
+              <video id="arPhotoCameraVideo" autoplay playsinline muted></video>
+              <canvas id="arPhotoCameraCapture" hidden></canvas>
+              <div class="ar-camera-hint" id="arPhotoCameraHint">Coloca tu rostro dentro del encuadre</div>
+            </div>
+            <div class="ar-camera-controls">
+              <button type="button" class="ar-camera-shutter" id="arPhotoCameraCaptureButton"><span></span><b>CAPTURAR</b></button>
+              <button type="button" class="ar-camera-file" id="arPhotoCameraFileButton">ELEGIR DEL CELULAR</button>
+            </div>
+            <p class="ar-camera-error" id="arPhotoCameraError" role="status" aria-live="polite"></p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- Álbum colaborativo: función independiente de la cabina con logotipo -->
+    <section class="section shared-gallery-section" id="fotos-fiesta" aria-label="Fotos colaborativas de la fiesta">
+      <div class="section-inner shared-gallery-inner">
+        <div class="shared-gallery-art" aria-hidden="true">
+          <div class="shared-gallery-polaroids">
+            <span class="shared-polaroid shared-polaroid-one">♡</span>
+            <span class="shared-polaroid shared-polaroid-two">✦</span>
+            <span class="shared-polaroid shared-polaroid-three">♡</span>
+          </div>
+          <div class="shared-gallery-camera"><span>◎</span></div>
+        </div>
+        <div class="shared-gallery-heading">
+          <p class="shared-gallery-eyebrow">UN RECUERDO ENTRE TODOS</p>
+          <h2>Las fotos de la <em>fiesta</em></h2>
+          <p>Toma tus fotos y mira las de todos, en el momento.</p>
+        </div>
+        <button class="shared-gallery-how-toggle" id="sharedGalleryHowToggle" type="button" aria-expanded="false" aria-controls="sharedGalleryHowPanel">
+          CÓMO FUNCIONA <span aria-hidden="true">⌃</span>
+        </button>
+        <div class="shared-gallery-how-panel" id="sharedGalleryHowPanel" hidden>
+          <div class="shared-gallery-step"><b>1</b><p><strong>Toca el botón</strong><br>Abre la cámara de tu celular o elige un recuerdo.</p></div>
+          <div class="shared-gallery-step"><b>2</b><p><strong>Comparte tu recuerdo</strong><br>Sube fotografías, videos, mensajes o un saludo de voz.</p></div>
+          <div class="shared-gallery-step"><b>3</b><p><strong>Queda en la galería</strong><br>Todos podrán ver y descargar los recuerdos compartidos.</p></div>
+          <p class="shared-gallery-note">Cada recuerdo forma parte de nuestra historia.</p>
+        </div>
+        <a class="shared-gallery-enter" href="galeria-fiesta.html">ENTRAR A LA GALERÍA <span aria-hidden="true">↗</span></a>
       </div>
     </section>
 
@@ -211,14 +344,16 @@
     </section>
 
     <footer class="footer-section">
-      <div class="footer-shade"></div>
+      <div class="footer-shade" aria-hidden="true"></div>
       <div class="footer-content">
-        <p class="eyebrow">GRACIAS POR SER PARTE DE NUESTRA HISTORIA</p>
         <h2>¡Gracias!</h2>
-        <p>El amor se celebra mejor cuando se comparte con las personas que queremos.</p>
-        <p class="footer-invite">¡TE ESPERAMOS!</p>
-        <img class="footer-logo" src="assets/logo-abril-ricardo.png" alt="Abril y Ricardo" loading="lazy">
-        <small>05 · AGOSTO · 2027</small>
+        <div class="footer-heart-divider" aria-hidden="true"><span></span><b>♡</b><span></span></div>
+        <p class="footer-thanks">POR SER PARTE DE<br>NUESTRA HISTORIA</p>
+        <div class="footer-leaf-divider" aria-hidden="true"><span></span><b>❧</b><span></span></div>
+        <button class="footer-close-envelope" id="closeEnvelope" type="button" aria-label="Cerrar sobre y volver al inicio de la invitación">
+          <img src="assets/sello-cerrar-sobre.webp" alt="" loading="lazy">
+          <span>CERRAR SOBRE</span>
+        </button>
       </div>
     </footer>
   </main>
@@ -232,12 +367,14 @@
   <audio id="inviteMusic" preload="metadata" loop>
     <source src="assets/riptide-vance-joy.mp3" type="audio/mpeg">
   </audio>
-  <button class="music-toggle" id="musicToggle" type="button" aria-label="Pausar música" aria-pressed="true" title="Pausar o reanudar Riptide">
+  <button class="music-toggle" id="musicToggle" type="button" role="switch" aria-label="Pausar música" aria-checked="true" aria-pressed="true" title="Pausar o reanudar Riptide">
     <span class="music-toggle-note" aria-hidden="true">♫</span>
-    <span class="music-toggle-label">MÚSICA</span>
   </button>
 <script src="js/infinite-gallery.js"></script>
   <script src="js/gallery-config.js"></script>
   <script src="js/app.js"></script>
+  <script src="js/photo-booth-config.js"></script>
+  <script src="js/photo-booth.js"></script>
+  <script src="js/shared-gallery-entry.js"></script>
 </body>
 </html>

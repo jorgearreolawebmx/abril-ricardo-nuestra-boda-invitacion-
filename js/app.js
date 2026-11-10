@@ -9,9 +9,10 @@
   const ambientVideo = $('#ambientVideo');
   const ambientWash = $('.ambient-wash');
   const invitation = $('#invitation');
-  const stickyCountdown = $('#stickyCountdown');
+ 
   const inviteMusic = $('#inviteMusic');
   const musicToggle = $('#musicToggle');
+  const closeEnvelopeButton = $('#closeEnvelope');
 
   let started = false;
   let opened = false;
@@ -41,15 +42,21 @@
     });
   }
 
+  if (closeEnvelopeButton) {
+    closeEnvelopeButton.addEventListener('click', () => {
+      // Reinicia la invitación desde el sobre para que pueda abrirse de nuevo.
+      window.location.reload();
+    });
+  }
+
   function updateMusicControl() {
     if (!inviteMusic || !musicToggle) return;
     const playing = !inviteMusic.paused && !inviteMusic.ended;
     musicToggle.classList.toggle('is-paused', !playing);
+    musicToggle.setAttribute('aria-checked', playing ? 'true' : 'false');
     musicToggle.setAttribute('aria-pressed', playing ? 'true' : 'false');
     musicToggle.setAttribute('aria-label', playing ? 'Pausar música' : 'Reproducir música');
     musicToggle.title = playing ? 'Pausar Riptide' : 'Reproducir Riptide';
-    const note = musicToggle.querySelector('.music-toggle-note');
-    if (note) note.textContent = playing ? '♫' : '♪';
   }
 
   function startInviteMusic() {
@@ -117,61 +124,241 @@
   updateCountdown();
   window.setInterval(updateCountdown, 1000);
 
-  // Al bajar de la portada aparece la pequeña barra de cuenta regresiva del ejemplo.
-  function updateScrollChrome() {
-    if (!opened) return;
-    const showBar = window.scrollY > Math.max(120, window.innerHeight * .72);
-    stickyCountdown.classList.toggle('is-visible', showBar);
-  }
-  window.addEventListener('scroll', updateScrollChrome, { passive: true });
-  $('#stickyTop').addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+  // Sellos de cera raspables. La fecha se descubre con arrastre real y acumulativo:
+  // un toque suelto no revela nada. El avance se mide con una cuadrícula propia
+  // (sin leer píxeles del canvas), así funciona igual al abrir el archivo local
+  // (file://), en Live Server, en un hosting o dentro de WhatsApp/Instagram.
+  const sealTexture = new Image();
+  sealTexture.decoding = 'async';
+  sealTexture.src = 'assets/sello-cera-ar.webp';
 
-  // Raspa la película de cada medallón para revelar día, mes y año.
-  $$('.scratch-layer').forEach((canvas, index) => {
-    const size = 130;
+  $$('.scratch-layer').forEach(canvas => {
+    const width = 420;
+    const height = 458;
     const ctx = canvas.getContext('2d');
-    canvas.width = size;
-    canvas.height = size;
-    const gradient = ctx.createLinearGradient(0, 0, size, size);
-    gradient.addColorStop(0, '#ded5c2');
-    gradient.addColorStop(.5, '#c8b995');
-    gradient.addColorStop(1, '#e8dfce');
-    ctx.fillStyle = gradient;
-    ctx.beginPath(); ctx.arc(size / 2, size / 2, size / 2, 0, Math.PI * 2); ctx.fill();
-    ctx.strokeStyle = 'rgba(117,105,78,.58)'; ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.arc(size / 2, size / 2, 54, 0, Math.PI * 2); ctx.stroke();
-    ctx.fillStyle = 'rgba(102,102,79,.78)';
-    ctx.font = '26px Georgia'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText('✿', size / 2, size / 2 - 2);
-    ctx.font = '8px Georgia'; ctx.fillText('ABRIL & RICARDO', size / 2, size / 2 + 22);
+    canvas.width = width;
+    canvas.height = height;
 
-    let scratching = false;
-    let scratched = 0;
-    function point(event) {
-      const rect = canvas.getBoundingClientRect();
-      return { x: (event.clientX - rect.left) * (size / rect.width), y: (event.clientY - rect.top) * (size / rect.height) };
-    }
-    function erase(event) {
-      if (!scratching) return;
-      const p = point(event);
-      ctx.globalCompositeOperation = 'destination-out';
-      ctx.beginPath(); ctx.arc(p.x, p.y, 15, 0, Math.PI * 2); ctx.fill();
-      scratched += 1;
-      if (scratched > 17) {
-        ctx.clearRect(0, 0, size, size);
-        canvas.classList.add('is-cleared');
-        canvas.style.pointerEvents = 'none';
-        const card = canvas.closest('.scratch-card');
-        card.classList.add('is-revealed');
+    // Cuadrícula de desgaste: cada celda guarda cuánto se ha raspado (0 a 1).
+    const COLS = 28;
+    const ROWS = 30;
+    const cellW = width / COLS;
+    const cellH = height / ROWS;
+    const wear = new Float32Array(COLS * ROWS);
+    const inSeal = new Uint8Array(COLS * ROWS);
+    let sealCells = 0;
+    for (let r = 0; r < ROWS; r++) {
+      for (let c = 0; c < COLS; c++) {
+        // El sello ocupa casi todo el lienzo; se ignoran solo las esquinas vacías.
+        const nx = ((c + .5) * cellW - width / 2) / (width * .47);
+        const ny = ((r + .5) * cellH - height / 2) / (height * .47);
+        if (nx * nx + ny * ny <= 1) { inSeal[r * COLS + c] = 1; sealCells++; }
       }
     }
+
+    const BRUSH = 66;            // grosor principal del raspado (px del lienzo)
+    const BRUSH_R = BRUSH / 2;
+    const REQUIRED_DISTANCE = 100; // px CSS mínimos arrastrados
+    const REQUIRED_WEAR = .36;     // fracción del sello desgastada para revelar
+
+    let ready = false;
+    let scratching = false;
+    let activePointerId = null;
+    let lastPoint = null;
+    let distanceCss = 0;
+    let completed = false;
+    let moveCount = 0;
+
+    function paintSeal() {
+      ctx.save();
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.globalAlpha = 1;
+      ctx.clearRect(0, 0, width, height);
+      if (sealTexture.complete && sealTexture.naturalWidth > 0) {
+        const scale = Math.min(width / sealTexture.naturalWidth, height / sealTexture.naturalHeight);
+        const drawWidth = sealTexture.naturalWidth * scale;
+        const drawHeight = sealTexture.naturalHeight * scale;
+        ctx.drawImage(sealTexture, (width - drawWidth) / 2, (height - drawHeight) / 2, drawWidth, drawHeight);
+      } else {
+        const gradient = ctx.createLinearGradient(30, 20, width - 30, height - 20);
+        gradient.addColorStop(0, '#efbd57');
+        gradient.addColorStop(.5, '#a85b13');
+        gradient.addColorStop(1, '#e4a13a');
+        ctx.fillStyle = gradient;
+        ctx.beginPath();
+        ctx.ellipse(width / 2, height / 2, 194, 211, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(255,231,174,.75)';
+        ctx.lineWidth = 5;
+        ctx.stroke();
+        ctx.fillStyle = '#fff0c5';
+        ctx.font = 'bold 78px Georgia';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('A&R', width / 2, height / 2);
+      }
+      ctx.restore();
+      ready = true;
+      canvas.style.pointerEvents = 'auto';
+      canvas.setAttribute('aria-label', 'Arrastra varias veces sobre el sello para revelar la fecha');
+    }
+
+    // Se pinta de inmediato (con respaldo dorado) y se repinta cuando carga la textura,
+    // siempre que todavía no se haya empezado a raspar.
+    paintSeal();
+    if (!(sealTexture.complete && sealTexture.naturalWidth > 0)) {
+      const repaint = () => { if (!completed && distanceCss === 0) paintSeal(); };
+      sealTexture.addEventListener('load', repaint, { once: true });
+      sealTexture.addEventListener('error', repaint, { once: true });
+    }
+
+    function getPoint(event) {
+      const rect = canvas.getBoundingClientRect();
+      return {
+        x: (event.clientX - rect.left) * (width / rect.width),
+        y: (event.clientY - rect.top) * (height / rect.height),
+        cssScale: rect.width / width
+      };
+    }
+
+    function stroke(from, to, lineWidth, alpha, offsetX = 0, offsetY = 0) {
+      ctx.globalAlpha = alpha;
+      ctx.lineWidth = lineWidth;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.beginPath();
+      ctx.moveTo(from.x + offsetX, from.y + offsetY);
+      ctx.lineTo(to.x + offsetX, to.y + offsetY);
+      ctx.stroke();
+    }
+
+    // Registra en la cuadrícula las celdas tocadas por el segmento (distancia punto-segmento).
+    function markWear(from, to) {
+      const minC = Math.max(0, Math.floor((Math.min(from.x, to.x) - BRUSH_R) / cellW));
+      const maxC = Math.min(COLS - 1, Math.floor((Math.max(from.x, to.x) + BRUSH_R) / cellW));
+      const minR = Math.max(0, Math.floor((Math.min(from.y, to.y) - BRUSH_R) / cellH));
+      const maxR = Math.min(ROWS - 1, Math.floor((Math.max(from.y, to.y) + BRUSH_R) / cellH));
+      const sx = to.x - from.x;
+      const sy = to.y - from.y;
+      const len2 = sx * sx + sy * sy || 1;
+      for (let r = minR; r <= maxR; r++) {
+        for (let c = minC; c <= maxC; c++) {
+          const cx = (c + .5) * cellW;
+          const cy = (r + .5) * cellH;
+          let t = ((cx - from.x) * sx + (cy - from.y) * sy) / len2;
+          t = Math.max(0, Math.min(1, t));
+          const d = Math.hypot(cx - (from.x + sx * t), cy - (from.y + sy * t));
+          if (d <= BRUSH_R) {
+            const i = r * COLS + c;
+            wear[i] = 1 - (1 - wear[i]) * .42; // cada pasada quita ~58 % de la cera, igual que el trazo visible
+          }
+        }
+      }
+    }
+
+    function wearRatio() {
+      let sum = 0;
+      for (let i = 0; i < wear.length; i++) if (inSeal[i]) sum += wear[i];
+      return sealCells ? sum / sealCells : 0;
+    }
+
+    function eraseSegment(from, to) {
+      const dx = to.x - from.x;
+      const dy = to.y - from.y;
+      const distance = Math.hypot(dx, dy);
+      const cssDistance = distance * from.cssScale;
+      if (cssDistance < 1.15) return;
+      distanceCss += cssDistance;
+      markWear(from, to);
+
+      ctx.save();
+      ctx.globalCompositeOperation = 'destination-out';
+      ctx.strokeStyle = '#000';
+      ctx.fillStyle = '#000';
+
+      // Desgaste principal, amplio y semitransparente: necesita varias pasadas.
+      stroke(from, to, BRUSH, .58);
+      // Roce más concentrado en el centro del dedo.
+      stroke(from, to, 28, .36, 1.8, -1.4);
+
+      // Fibras y pequeñas escamas irregulares para que el desgaste no sea un trazo perfecto.
+      const steps = Math.max(2, Math.ceil(distance / 17));
+      ctx.globalAlpha = .34;
+      for (let i = 1; i < steps; i++) {
+        const t = i / steps;
+        const px = from.x + dx * t;
+        const py = from.y + dy * t;
+        const wobble = Math.sin((i + distance) * 7.31) * 8;
+        const side = Math.cos((i + distance) * 4.17) * 5;
+        ctx.beginPath();
+        ctx.ellipse(px + wobble, py + side, 3.2 + (i % 3), 1.7 + (i % 2), Math.atan2(dy, dx), 0, Math.PI * 2);
+        ctx.fill();
+      }
+      stroke(from, to, 2.5, .46, -4.5, 4.2);
+      stroke(from, to, 1.7, .35, 5.2, -3.3);
+      ctx.restore();
+    }
+
+    function reveal() {
+      if (completed) return;
+      completed = true;
+      scratching = false;
+      canvas.classList.remove('is-scratching');
+      canvas.classList.add('is-cleared');
+      canvas.style.pointerEvents = 'none';
+      canvas.setAttribute('aria-label', 'Fecha revelada');
+      const card = canvas.closest('.scratch-card');
+      if (card) card.classList.add('is-revealed');
+    }
+
+    function checkReveal() {
+      if (completed || !ready) return;
+      // Requiere arrastre acumulado + desgaste real. No responde a un toque ni a una pasada corta.
+      if (distanceCss >= REQUIRED_DISTANCE && wearRatio() >= REQUIRED_WEAR) reveal();
+    }
+
     canvas.addEventListener('pointerdown', event => {
+      if (!ready || completed || scratching) return;
       scratching = true;
-      canvas.setPointerCapture(event.pointerId);
-      erase(event);
+      activePointerId = event.pointerId;
+      lastPoint = getPoint(event);
+      canvas.classList.add('is-scratching');
+      try { canvas.setPointerCapture(event.pointerId); } catch (_) {}
+      event.preventDefault();
     });
-    canvas.addEventListener('pointermove', erase);
-    ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(name => canvas.addEventListener(name, () => { scratching = false; }));
+
+    canvas.addEventListener('pointermove', event => {
+      if (!scratching || completed || event.pointerId !== activePointerId) return;
+      const nextPoint = getPoint(event);
+      eraseSegment(lastPoint, nextPoint);
+      lastPoint = nextPoint;
+      // Se revela en cuanto el desgaste es suficiente, sin esperar a soltar el dedo.
+      if ((++moveCount % 6) === 0) checkReveal();
+      event.preventDefault();
+    });
+
+    function stopScratch(event) {
+      if (!scratching || (event && event.pointerId !== activePointerId)) return;
+      scratching = false;
+      activePointerId = null;
+      lastPoint = null;
+      canvas.classList.remove('is-scratching');
+      checkReveal();
+    }
+    canvas.addEventListener('pointerup', stopScratch);
+    canvas.addEventListener('pointercancel', stopScratch);
+    canvas.addEventListener('lostpointercapture', stopScratch);
+    canvas.addEventListener('contextmenu', event => event.preventDefault());
+
+    // Accesibilidad: con teclado, Enter o Espacio revelan el sello.
+    canvas.setAttribute('tabindex', '0');
+    canvas.setAttribute('role', 'button');
+    canvas.addEventListener('keydown', event => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        reveal();
+      }
+    });
   });
 
   // Galería 3D infinita integrada desde el prototipo original.
@@ -232,24 +419,82 @@
     }
   });
 
-  // La respuesta seleccionada y el nombre se incluyen en el mensaje de WhatsApp.
-  let rsvpAnswer = 'Sí, asistiré';
-  const rsvpButtons = $$('.rsvp-option');
-  rsvpButtons.forEach(button => button.addEventListener('click', () => {
-    rsvpAnswer = button.dataset.rsvp;
-    rsvpButtons.forEach(other => other.classList.toggle('is-selected', other === button));
-    updateRsvpLink();
-  }));
-  const guestName = $('#guestName');
-  const rsvpLink = $('#rsvpWhatsapp');
-  function updateRsvpLink() {
-    const name = guestName.value.trim();
-    const greeting = name ? `Hola, soy ${name}.` : 'Hola.';
-    const message = `${greeting} ${rsvpAnswer}. Quiero responder a la invitación de boda de Abril y Ricardo el 5 de agosto de 2027.`;
-    rsvpLink.href = `https://wa.me/529613805924?text=${encodeURIComponent(message)}`;
+  // Confirmación de asistencia: interruptor visual + nombre obligatorio + envío a WhatsApp.
+  const attendanceSwitch = $('#attendanceSwitch');
+  const attendanceHelper = $('#attendanceHelper');
+  const attendanceMessage = $('#attendanceMessage');
+  const attendanceForm = $('#attendanceForm');
+  const attendanceName = $('#attendanceName');
+  const labelNo = $('.attendance-label-no');
+  const labelYes = $('.attendance-label-yes');
+  let willAttend = true;
+
+  function updateAttendance() {
+    if (!attendanceSwitch || !attendanceMessage) return;
+    const answer = willAttend ? 'Sí, asistiré' : 'No podré asistir';
+    const message = willAttend
+      ? 'Qué alegría. Los esperamos.'
+      : 'Gracias por avisarnos.';
+
+    attendanceSwitch.classList.toggle('is-no', !willAttend);
+    attendanceSwitch.setAttribute('aria-checked', willAttend ? 'true' : 'false');
+    attendanceSwitch.setAttribute('aria-label', `Cambiar respuesta: actualmente ${answer.toLowerCase()}`);
+    if (labelNo) labelNo.classList.toggle('is-active', !willAttend);
+    if (labelYes) labelYes.classList.toggle('is-active', willAttend);
+
+    attendanceMessage.classList.remove('is-changing');
+    void attendanceMessage.offsetWidth;
+    attendanceMessage.textContent = message;
+    attendanceMessage.classList.add('is-changing');
+    if (attendanceHelper) attendanceHelper.textContent = 'Puedes cambiar tu respuesta';
   }
-  guestName.addEventListener('input', updateRsvpLink);
-  updateRsvpLink();
+
+  if (attendanceSwitch) {
+    // El control es un botón real; el arte interno nunca intercepta los toques.
+    attendanceSwitch.addEventListener('click', event => {
+      event.preventDefault();
+      willAttend = !willAttend;
+      updateAttendance();
+    });
+    updateAttendance();
+  }
+
+  if (attendanceForm && attendanceName) {
+    attendanceForm.addEventListener('submit', event => {
+      event.preventDefault();
+      const guestName = attendanceName.value.trim();
+      if (!guestName) {
+        attendanceName.setCustomValidity('Escribe tu nombre para enviar la respuesta.');
+        attendanceName.reportValidity();
+        attendanceName.focus();
+        return;
+      }
+      attendanceName.setCustomValidity('');
+      if (guestName.length < 2) {
+        attendanceName.setCustomValidity('Escribe tu nombre completo.');
+        attendanceName.reportValidity();
+        attendanceName.focus();
+        return;
+      }
+
+      const response = willAttend ? 'Sí, asistiré' : 'No podré asistir';
+      const whatsappMessage = [
+        'Hola, soy ' + guestName + '.',
+        ' ' + response + ' a la boda de Abril y Ricardo el 5 de agosto de 2027.'
+      ].join('');
+      const whatsappURL = `https://wa.me/529613805924?text=${encodeURIComponent(whatsappMessage)}`;
+
+      // Abrir la pestaña de forma síncrona dentro del gesto del usuario evita bloqueos de popup.
+      const whatsappWindow = window.open(whatsappURL, '_blank');
+      if (whatsappWindow) whatsappWindow.opener = null;
+      if (!whatsappWindow) {
+        // Algunos navegadores impiden nuevas pestañas; navegar en la misma ventana es el respaldo.
+        window.location.href = whatsappURL;
+      }
+    });
+
+    attendanceName.addEventListener('input', () => attendanceName.setCustomValidity(''));
+  }
 
   // Aparición ligera de los módulos al entrar en pantalla.
   if ('IntersectionObserver' in window) {

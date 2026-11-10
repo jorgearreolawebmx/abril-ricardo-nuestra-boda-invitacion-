@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#eee4d4">
+  <meta name="description" content="Comparte los recuerdos de la boda de Abril & Ricardo.">
+  <title>Las fotos de la fiesta | Abril & Ricardo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Marcellus&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/shared-gallery.css">
+</head>
+<body>
+  <video class="ag-bg-video" autoplay muted loop playsinline aria-hidden="true">
+    <source src="assets/fondo-botanico.mp4" type="video/mp4">
+  </video>
+  <div class="ag-bg-wash" aria-hidden="true"></div>
+
+  <main class="ag-shell">
+    <a class="ag-back" href="index.html#fotos-fiesta">‹ Volver a la invitación</a>
+
+    <header class="ag-header">
+      <p class="ag-eyebrow">UN RECUERDO PARA COMPARTIR</p>
+      <h1>Abril <span>&</span> Ricardo</h1>
+      <p class="ag-intro">Comparte los mejores momentos de nuestra boda.</p>
+    </header>
+
+    <section class="ag-actions" aria-label="Opciones para compartir">
+      <button class="ag-action ag-action-featured" id="agTakePhoto" type="button">
+        <span class="ag-action-icon">◎</span><strong>Tomar<br>una foto</strong>
+      </button>
+      <button class="ag-action" id="agChooseFile" type="button">
+        <span class="ag-action-icon">▧</span><strong>Elegir<br>del celular</strong>
+      </button>
+      <button class="ag-action" id="agWriteMessage" type="button">
+        <span class="ag-action-icon">✎</span><strong>Escribir<br>un mensaje</strong>
+      </button>
+      <button class="ag-action" id="agRecordAudio" type="button">
+        <span class="ag-action-icon">♫</span><strong>Grabar<br>un saludo</strong>
+      </button>
+    </section>
+
+    <input id="agFileInput" type="file" accept="image/jpeg,image/png,image/webp,video/mp4,video/quicktime,video/webm" hidden>
+    <section class="ag-composer" id="agComposer" hidden>
+      <div class="ag-composer-head">
+        <h2 id="agComposerTitle">Comparte tu recuerdo</h2>
+        <button id="agComposerClose" type="button" aria-label="Cerrar">×</button>
+      </div>
+      <div id="agComposerBody"></div>
+      <p class="ag-status" id="agComposerStatus" role="status" aria-live="polite"></p>
+    </section>
+
+    <section class="ag-gallery-section">
+      <div class="ag-gallery-heading">
+        <div><p class="ag-eyebrow">RECUERDOS COMPARTIDOS</p><h2>Las fotos de la fiesta</h2></div>
+        <button id="agRefresh" type="button" class="ag-refresh" aria-label="Actualizar galería">↻</button>
+      </div>
+      <p class="ag-gallery-intro">Los recuerdos que compartan nuestros invitados aparecerán aquí.</p>
+      <div id="agGallery" class="ag-gallery-grid">
+        <div class="ag-empty"><span>♡</span><p>Todavía no hay fotos.</p><strong>Sube la primera.</strong></div>
+      </div>
+      <p class="ag-last-updated" id="agLastUpdated">La galería se actualizará automáticamente.</p>
+    </section>
+
+    <footer class="ag-footer">Con cariño, Abril & Ricardo · 5 de agosto de 2027</footer>
+  </main>
+
+  <div class="ag-camera-modal" id="agCameraModal" hidden>
+    <div class="ag-camera-dialog" role="dialog" aria-modal="true" aria-labelledby="agCameraTitle">
+      <div class="ag-composer-head"><h2 id="agCameraTitle">Toma tu foto</h2><button id="agCameraClose" type="button">×</button></div>
+      <div class="ag-camera-view"><video id="agCameraVideo" autoplay playsinline muted></video></div>
+      <button class="ag-submit" id="agCaptureButton" type="button">CAPTURAR FOTO</button>
+      <p class="ag-status" id="agCameraStatus"></p>
+    </div>
+  </div>
+
+  <div class="ag-lightbox" id="agLightbox" hidden>
+    <button id="agLightboxClose" type="button" aria-label="Cerrar">×</button>
+    <div id="agLightboxContent"></div>
+  </div>
+
+  <script src="js/photo-booth-config.js"></script>
+  <script src="js/shared-gallery.js"></script>
+</body>
+</html>
