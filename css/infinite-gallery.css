@@ -1,0 +1,124 @@
+/* Infinite Gallery — estilos del motor. Sin fuentes ni recursos externos. */
+.ig-root {
+  position: relative;
+  overflow: hidden;
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  cursor: grab;
+  outline: none;
+  --ig-gold: #D6B58A;
+  --ig-ink: #0b0a09;
+  --ig-paper: #ffffff;
+  --ig-serif: "Cormorant Garamond", "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Palatino, Georgia, serif;
+}
+.ig-root.is-dragging { cursor: grabbing; }
+.ig-root.is-hover { cursor: pointer; }
+
+.ig-bg {
+  position: absolute; inset: 0;
+  background-size: cover;            /* object-fit: cover equivalente */
+  background-repeat: no-repeat;
+  transform: translateZ(0);
+}
+.ig-shade { position: absolute; inset: 0; pointer-events: none; }
+.ig-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+
+/* Título fijo en el centro, por encima de las fotografías (como en la referencia) */
+.ig-title {
+  position: absolute; left: 50%; top: 50%;
+  transform: translate(-50%, -50%);
+  max-width: 86%;
+  text-align: center;
+  font-family: var(--ig-serif);
+  font-weight: 500;
+  font-size: clamp(26px, 3.6vw, 58px);
+  line-height: 1.1;
+  letter-spacing: 0.01em;
+  color: var(--ig-paper);
+  text-shadow: 0 1px 26px rgba(0, 0, 0, 0.5);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 1.2s ease 0.3s;
+}
+.ig-root.is-ready .ig-title { opacity: 1; }
+
+.ig-hint {
+  position: absolute; left: clamp(16px, 2vw, 28px); bottom: clamp(16px, 2.4vh, 28px);
+  max-width: calc(100% - 40px);
+  font-family: var(--ig-serif);
+  font-size: clamp(14px, 1.15vw, 17px);
+  letter-spacing: 0.02em;
+  color: rgba(255, 255, 255, 0.88);
+  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.55);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.9s ease;
+}
+.ig-root.is-ready .ig-hint { opacity: 1; transition-delay: 1.4s; }
+.ig-hint.is-gone, .ig-root.is-ready .ig-hint.is-gone { opacity: 0; transition-delay: 0s; transition-duration: 0.5s; }
+
+.ig-progress {
+  position: absolute; left: 0; top: 0; height: 2px; width: 100%;
+  background: var(--ig-gold);
+  transform-origin: 0 50%; transform: scaleX(0);
+  transition: transform 0.25s ease, opacity 0.5s ease 0.2s;
+  pointer-events: none;
+}
+.ig-progress.is-done { opacity: 0; }
+
+.ig-message {
+  position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  font-family: var(--ig-serif); font-size: 20px; color: #fff; text-align: center;
+  text-shadow: 0 1px 12px rgba(0,0,0,.6);
+}
+
+/* ----- Visor ampliado ----- */
+.ig-viewer { position: absolute; inset: 0; z-index: 20; display: none; touch-action: none; cursor: default; }
+.ig-viewer.is-open { display: block; }
+.ig-viewer:focus { outline: none; }
+.ig-viewer__scrim { position: absolute; inset: 0; -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+.ig-viewer__stage { position: absolute; inset: 0; overflow: hidden; }
+.ig-viewer__img {
+  position: absolute; left: 0; top: 0;
+  transform-origin: 0 0;
+  display: block;
+  max-width: none;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
+  -webkit-user-drag: none;
+  user-select: none;
+  will-change: transform, opacity;
+}
+.ig-viewer__btn {
+  position: absolute;
+  width: 46px; height: 46px;
+  display: grid; place-items: center;
+  padding: 0; margin: 0;
+  border: 1px solid rgba(255, 255, 255, 0.38);
+  border-radius: 50%;
+  background: rgba(10, 9, 8, 0.28);
+  color: #fff;
+  cursor: pointer;
+  transition: border-color .25s ease, color .25s ease, background-color .25s ease;
+}
+.ig-viewer__btn:hover, .ig-viewer__btn:focus-visible { border-color: var(--ig-gold); color: var(--ig-gold); background: rgba(10, 9, 8, 0.5); }
+.ig-viewer__btn:focus-visible { outline: 2px solid var(--ig-gold); outline-offset: 3px; }
+.ig-viewer__close { top: clamp(12px, 2.4vh, 26px); right: clamp(12px, 2vw, 28px); }
+.ig-viewer__prev { left: clamp(10px, 2vw, 28px); top: 50%; margin-top: -23px; }
+.ig-viewer__next { right: clamp(10px, 2vw, 28px); top: 50%; margin-top: -23px; }
+.ig-viewer__count {
+  position: absolute; left: 50%; bottom: clamp(14px, 2.6vh, 28px); transform: translateX(-50%);
+  font-family: var(--ig-serif); font-size: 17px; letter-spacing: 0.12em; color: var(--ig-gold);
+  pointer-events: none;
+}
+
+@media (max-width: 640px) {
+  .ig-viewer__btn { width: 42px; height: 42px; }
+  .ig-viewer__prev, .ig-viewer__next { top: auto; bottom: clamp(10px, 2vh, 20px); margin-top: 0; }
+  .ig-viewer__prev { left: 14px; }
+  .ig-viewer__next { right: 14px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ig-title, .ig-hint { transition-duration: 0.01s; transition-delay: 0s; }
+}

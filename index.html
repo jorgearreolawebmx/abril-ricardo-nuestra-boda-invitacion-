@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#e9e0d1">
+  <meta name="description" content="Abril & Ricardo — 5 de agosto de 2027. Nos casamos y queremos compartir este día contigo.">
+  <title>Abril & Ricardo | Nuestra boda</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Great+Vibes&family=Marcellus&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/infinite-gallery.css">
+</head>
+<body class="is-locked">
+  <!-- El video del sobre ocupa únicamente el lienzo móvil, incluso cuando se abre desde escritorio. -->
+  <section class="opening-screen" id="openingScreen" aria-label="Abrir invitación">
+    <div class="opening-frame">
+      <video class="opening-video" id="openingVideo" playsinline muted preload="auto" poster="assets/sobre-poster.jpg">
+        <source src="assets/animacion-sobre.mp4" type="video/mp4">
+      </video>
+      <button class="seal-hotspot" id="sealHotspot" type="button" aria-label="Tocar el sello dorado para abrir la invitación"></button>
+      <div class="opening-caption" id="openingCaption">
+        <span></span><p>Toca el sello para abrir tu invitación</p><span></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Fondo en video, fijo detrás de todas las secciones y en reproducción continua. -->
+  <video class="ambient-video" id="ambientVideo" muted loop playsinline preload="auto" aria-hidden="true">
+    <source src="assets/fondo-botanico.mp4" type="video/mp4">
+  </video>
+  <div class="ambient-wash" aria-hidden="true"></div>
+
+    <!-- Cuenta regresiva compacta, que aparece al comenzar a recorrer la invitación. -->
+    <div class="sticky-countdown" id="stickyCountdown" aria-label="Cuenta regresiva">
+      <div class="sticky-countdown-values">
+        <span><b data-count="days">000</b><small>DÍAS</small></span>
+        <span><b data-count="hours">00</b><small>HRS</small></span>
+        <span><b data-count="minutes">00</b><small>MIN</small></span>
+        <span><b data-count="seconds">00</b><small>SEG</small></span>
+      </div>
+      <button class="sticky-up" type="button" id="stickyTop" aria-label="Volver al inicio">⌃</button>
+    </div>
+
+  <main class="invitation" id="invitation" aria-hidden="true">
+    <section class="hero" id="inicio">
+      <img class="hero-photo" src="assets/pareja-portada.webp" alt="Abril y Ricardo" fetchpriority="high">
+      <div class="hero-shade"></div>
+      <div class="petals" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+      <div class="hero-content">
+        <p class="hero-title-small">NOS CASAMOS</p>
+        <img class="hero-logo" src="assets/logo-abril-ricardo.png" alt="Abril y Ricardo" fetchpriority="high">
+        <div class="hero-rule"><span></span><b>✦</b><span></span></div>
+        <p class="hero-date">05 · AGOSTO · 2027</p>
+        <div class="countdown hero-countdown" aria-label="Cuenta regresiva">
+          <div><strong data-count="days">000</strong><span>Días</span></div>
+          <div><strong data-count="hours">00</strong><span>Horas</span></div>
+          <div><strong data-count="minutes">00</strong><span>Min</span></div>
+          <div><strong data-count="seconds">00</strong><span>Seg</span></div>
+        </div>
+      </div>
+      <a class="scroll-cue" href="#fecha" aria-label="Desliza para descubrir la invitación"><span></span></a>
+    </section>
+
+    <section class="section date-section" id="fecha">
+      <div class="section-inner">
+        <p class="eyebrow">LA FECHA</p>
+        <h2>Raspa para revelar</h2>
+        <p class="section-intro">Descubre el día en que comienza nuestra historia como esposos.</p>
+        <div class="scratch-row" aria-label="Raspa los tres círculos para descubrir la fecha">
+          <div class="scratch-card"><span class="scratch-answer">05</span><small>DÍA</small><canvas class="scratch-layer" aria-label="Raspa para revelar el día"></canvas></div>
+          <div class="scratch-card"><span class="scratch-answer">08</span><small>MES</small><canvas class="scratch-layer" aria-label="Raspa para revelar el mes"></canvas></div>
+          <div class="scratch-card"><span class="scratch-answer">27</span><small>AÑO</small><canvas class="scratch-layer" aria-label="Raspa para revelar el año"></canvas></div>
+        </div>
+        <p class="scratch-caption">05 · 08 · 2027</p>
+        <div class="date-ticket">
+          <span class="ticket-side">ABRIL & RICARDO</span>
+          <div class="ticket-main"><small>RESERVA LA FECHA</small><strong>¡Nos casamos!</strong><span>Jueves · 5 de agosto de 2027</span><em>12:00 h · Catedral de San Cristóbal Mártir</em></div>
+          <span class="ticket-stamp">A<br>&<br>R</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="section message-section envelope-message-section" id="mensaje">
+      <div class="section-inner">
+        <p class="eyebrow">CON MUCHO CARIÑO</p>
+        <p class="section-intro envelope-intro">Hay momentos en la vida que se vuelven inolvidables. Con mucha alegría, queremos compartir el comienzo de esta nueva etapa con las personas que forman parte de nuestra historia.</p>
+        <div class="envelope-art-wrap">
+          <img class="envelope-art" src="assets/sobre-abierto.webp" alt="Sobre de papel marfil con una carta abierta" loading="lazy">
+          <div class="envelope-letter-copy">
+            <h2>A los que hacen que sea fiesta</h2>
+            <p>Nos conocimos subiendo los escalones de cantera de una plaza, cada uno cargando el pastel de un cumpleaños distinto.</p>
+            <p>Sin ustedes esto sería nomás una fecha en el calendario; con ustedes, es nuestra fiesta.</p>
+          </div>
+        </div>
+        <p class="handwritten">Con cariño, Abril &amp; Ricardo.</p>
+      </div>
+    </section>
+
+    <section class="section places-section" id="lugares">
+      <div class="section-inner">
+        <p class="eyebrow">CEREMONIA Y FIESTA</p>
+        <h2>¿Dónde y cuándo?</h2>
+        <article class="place-card">
+          <img src="assets/catedral-san-cristobal.webp" alt="Catedral de San Cristóbal Mártir" loading="lazy">
+          <div class="place-copy">
+            <p class="eyebrow">12:00 DEL DÍA</p>
+            <h3>Ceremonia religiosa</h3>
+            <p class="place-name">Catedral de San Cristóbal Mártir</p>
+            <p>Acompáñanos a celebrar nuestra unión ante Dios.</p>
+            <a class="pill-link" href="https://share.google/hRuaqsb4HJ9cx1z23" target="_blank" rel="noopener noreferrer">VER UBICACIÓN <span>↗</span></a>
+          </div>
+        </article>
+        <article class="place-card">
+          <img src="assets/ceremonia-espacio.webp" alt="Espacio de celebración de la boda" loading="lazy">
+          <div class="place-copy">
+            <p class="eyebrow">14:00 H</p>
+            <h3>Recepción</h3>
+            <p class="place-name">Salón Uvence</p>
+            <p>Después de la ceremonia, celebraremos contigo este día tan especial.</p>
+            <a class="pill-link" href="https://share.google/0F5msZoW95PeyRaOS" target="_blank" rel="noopener noreferrer">VER UBICACIÓN <span>↗</span></a>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section itinerary-section" id="itinerario">
+      <div class="section-inner">
+        <p class="eyebrow">EL GRAN DÍA</p>
+        <h2>Así será nuestro día</h2>
+        <p class="section-intro">Un día lleno de momentos especiales para celebrar juntos.</p>
+        <div class="timeline">
+          <div class="timeline-item"><time>12:00</time><span class="timeline-dot">✿</span><div><h3>Ceremonia</h3><p>Uniremos nuestras vidas ante Dios.</p></div></div>
+          <div class="timeline-item"><time>14:00</time><span class="timeline-dot">✿</span><div><h3>Recepción</h3><p>Bienvenida en Salón Uvence.</p></div></div>
+          <div class="timeline-item"><time>14:30</time><span class="timeline-dot">✿</span><div><h3>Cóctel de bienvenida</h3><p>Un momento para saludarnos.</p></div></div>
+          <div class="timeline-item"><time>15:30</time><span class="timeline-dot">✿</span><div><h3>Banquete</h3><p>Compartiremos la mesa y buenos momentos.</p></div></div>
+          <div class="timeline-item"><time>16:30</time><span class="timeline-dot">✿</span><div><h3>Brindis</h3><p>Por el amor y esta nueva etapa.</p></div></div>
+          <div class="timeline-item"><time>17:00</time><span class="timeline-dot">✿</span><div><h3>Primer baile</h3><p>Nuestro primer baile como esposos.</p></div></div>
+          <div class="timeline-item"><time>17:30</time><span class="timeline-dot">✿</span><div><h3>¡Que comience la fiesta!</h3><p>Bailemos y celebremos juntos.</p></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section attire-section" id="vestimenta">
+      <div class="section-inner">
+        <p class="eyebrow">PARA TU COMODIDAD</p>
+        <h2>Vestimenta</h2>
+        <p class="section-intro">Código de vestimenta para nuestra celebración.</p>
+        <div class="dress-code"><span class="dress-swatch"></span><strong>FORMAL DE NEGRO</strong><span class="dress-swatch"></span></div>
+        <div class="attire-grid">
+          <figure><img src="assets/vestimenta-mujer.webp" alt="Inspiración de vestimenta formal negra para mujer" loading="lazy"><figcaption>DAMAS</figcaption></figure>
+          <figure><img src="assets/vestimenta-hombre.webp" alt="Inspiración de vestimenta formal negra para hombre" loading="lazy"><figcaption>CABALLEROS</figcaption></figure>
+        </div>
+        <p class="attire-note">Agradecemos que nos acompañes con vestimenta formal en color negro.</p>
+      </div>
+    </section>
+
+    <section class="section gallery-section" id="galeria">
+      <div class="section-inner">
+        <p class="eyebrow">RECUERDOS QUE NOS ACOMPAÑAN</p>
+        <button class="gallery-photo-launcher" id="openInfiniteGallery" type="button" aria-haspopup="dialog" aria-controls="infiniteGalleryShell" aria-label="Abrir la galería infinita de Abril y Ricardo">
+          <img src="assets/gallery-entry-bouquet.webp" alt="Abril y Ricardo juntos, con su ramo de flores en primer plano" loading="lazy">
+          <span class="gallery-photo-overlay">
+            <span class="gallery-photo-title">Nuestra galería</span>
+            <span class="gallery-photo-subtitle">Nuestra galería infinita como nuestro amor</span>
+            <span class="gallery-photo-arrow" aria-hidden="true">↗</span>
+          </span>
+        </button>
+      </div>
+    </section>
+
+    <section class="section gifts-section" id="regalo">
+      <div class="section-inner">
+        <p class="eyebrow">LO MÁS IMPORTANTE</p>
+        <h2>Mesa de regalos</h2>
+        <div class="gift-card">
+          <span class="gift-icon">♡</span>
+          <p>El mejor regalo será compartir este día contigo y guardar juntos un recuerdo inolvidable.</p>
+          <small>Tu presencia es nuestro mejor regalo.</small>
+        </div>
+      </div>
+    </section>
+
+    <section class="section rsvp-section" id="confirmacion">
+      <div class="section-inner">
+        <p class="eyebrow">QUEREMOS CONTAR CONTIGO</p>
+        <h2>Confirma tu asistencia</h2>
+        <p class="section-intro">Nos encantaría contar contigo en este día tan especial. Por favor, confirma tu asistencia por WhatsApp.</p>
+        <div class="rsvp-card">
+          <label for="guestName">Tu nombre</label>
+          <input id="guestName" type="text" autocomplete="name" placeholder="Escribe tu nombre">
+          <p class="rsvp-question">¿Podremos contar contigo?</p>
+          <div class="rsvp-options">
+            <button class="rsvp-option is-selected" type="button" data-rsvp="Sí, asistiré">Sí, asistiré</button>
+            <button class="rsvp-option" type="button" data-rsvp="Lo siento, no podré asistir">No podré asistir</button>
+          </div>
+          <a class="whatsapp-cta" id="rsvpWhatsapp" href="https://wa.me/529613805924?text=Hola%2C%20quiero%20confirmar%20mi%20asistencia%20a%20la%20boda%20de%20Abril%20y%20Ricardo." target="_blank" rel="noopener noreferrer">CONFIRMAR POR WHATSAPP <span>↗</span></a>
+          <p class="contact-line">961 380 5924</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section questions-section" id="dudas">
+      <div class="section-inner">
+        <p class="eyebrow">ESTAMOS PARA AYUDARTE</p>
+        <h2>¿Alguna duda?</h2>
+        <p class="section-intro">Cualquier cosa que necesites saber, puedes escribirnos.</p>
+        <a class="pill-link" href="https://wa.me/529613805924?text=Hola%2C%20tengo%20una%20duda%20sobre%20la%20boda%20de%20Abril%20y%20Ricardo." target="_blank" rel="noopener noreferrer">ESCRÍBENOS POR WHATSAPP <span>↗</span></a>
+      </div>
+    </section>
+
+    <footer class="footer-section">
+      <div class="footer-shade"></div>
+      <div class="footer-content">
+        <p class="eyebrow">GRACIAS POR SER PARTE DE NUESTRA HISTORIA</p>
+        <h2>¡Gracias!</h2>
+        <p>El amor se celebra mejor cuando se comparte con las personas que queremos.</p>
+        <p class="footer-invite">¡TE ESPERAMOS!</p>
+        <img class="footer-logo" src="assets/logo-abril-ricardo.png" alt="Abril y Ricardo" loading="lazy">
+        <small>05 · AGOSTO · 2027</small>
+      </div>
+    </footer>
+  </main>
+
+
+  <section class="infinite-gallery-shell" id="infiniteGalleryShell" role="dialog" aria-modal="true" aria-label="Nuestra galería infinita como nuestro amor" aria-hidden="true">
+    <div class="infinite-gallery-engine" id="infiniteGalleryEngine"></div>
+    <button class="infinite-gallery-close" id="closeInfiniteGallery" type="button" aria-label="Cerrar galería">×</button>
+  </section>
+
+  <audio id="inviteMusic" preload="metadata" loop>
+    <source src="assets/riptide-vance-joy.mp3" type="audio/mpeg">
+  </audio>
+  <button class="music-toggle" id="musicToggle" type="button" aria-label="Pausar música" aria-pressed="true" title="Pausar o reanudar Riptide">
+    <span class="music-toggle-note" aria-hidden="true">♫</span>
+    <span class="music-toggle-label">MÚSICA</span>
+  </button>
+<script src="js/infinite-gallery.js"></script>
+  <script src="js/gallery-config.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
