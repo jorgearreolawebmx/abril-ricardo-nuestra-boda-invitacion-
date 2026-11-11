@@ -203,3 +203,12 @@ ACTUALIZACIÓN V25 — ESTRUCTURA LIMPIA Y PANEL PRIVADO
 - La URL actual de Apps Script permanece configurada.
 - La contraseña del panel se mantiene fuera de los archivos públicos y se configura como Script Property AR_PANEL_PASSWORD.
 - El paquete final queda por debajo de 100 archivos.
+
+
+ACTUALIZACIÓN V26 — GALERÍA INFINITA CON FOTOGRAFÍAS DE DRIVE
+- Se conserva el motor de galería infinita existente y se reutiliza dentro de galeria-fiesta.html.
+- La galería consulta únicamente fotografías de FOTOS_DE_LA_FIESTA y FOTOS_CON_LOGO.
+- Se añadieron cuatro imágenes optimizadas: un fondo fijo para la galería infinita y tres fotografías de muestra para los marcos mientras Drive está vacío.
+- La portada actualiza los tres marcos con las tres fotografías más recientes compartidas.
+- Las fotos quedan visibles con permiso de lector por enlace; videos, mensajes y audios siguen privados y solo aparecen en el panel autenticado.
+- El formulario de subida se conserva debajo de la galería; al compartir una fotografía, la galería se actualiza automáticamente.

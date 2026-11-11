@@ -309,10 +309,10 @@
     <section class="section shared-gallery-section" id="fotos-fiesta" aria-label="Fotos colaborativas de la fiesta">
       <div class="section-inner shared-gallery-inner">
         <div class="shared-gallery-art" aria-hidden="true">
-          <div class="shared-gallery-polaroids">
-            <span class="shared-polaroid shared-polaroid-one">♡</span>
-            <span class="shared-polaroid shared-polaroid-two">✦</span>
-            <span class="shared-polaroid shared-polaroid-three">♡</span>
+          <div class="shared-gallery-polaroids" aria-label="Las fotografías más recientes compartidas por los invitados">
+            <figure class="shared-polaroid shared-polaroid-one"><img id="sharedLatestPhoto1" src="assets/galeria-muestra-ceremonia.webp" alt="Fotografía de la ceremonia de Abril y Ricardo" loading="lazy"></figure>
+            <figure class="shared-polaroid shared-polaroid-two"><img id="sharedLatestPhoto2" src="assets/galeria-muestra-entrada.webp" alt="Fotografía de la entrada de los recién casados" loading="lazy"></figure>
+            <figure class="shared-polaroid shared-polaroid-three"><img id="sharedLatestPhoto3" src="assets/galeria-muestra-salida.webp" alt="Fotografía de la salida de los recién casados" loading="lazy"></figure>
           </div>
           <div class="shared-gallery-camera"><span>◎</span></div>
         </div>
@@ -327,7 +327,7 @@
         <div class="shared-gallery-how-panel" id="sharedGalleryHowPanel" hidden>
           <div class="shared-gallery-step"><b>1</b><p><strong>Toca el botón</strong><br>Abre la cámara de tu celular o elige un recuerdo.</p></div>
           <div class="shared-gallery-step"><b>2</b><p><strong>Comparte tu recuerdo</strong><br>Sube fotografías, videos, mensajes o un saludo de voz.</p></div>
-          <div class="shared-gallery-step"><b>3</b><p><strong>Queda en la galería</strong><br>Abril & Ricardo podrán conservar y revisar los recuerdos desde su panel privado.</p></div>
+          <div class="shared-gallery-step"><b>3</b><p><strong>Las fotos aparecen para todos</strong><br>Las fotografías se mostrarán en la galería compartida. Los demás recuerdos serán privados para Abril & Ricardo.</p></div>
           <p class="shared-gallery-note">Cada recuerdo forma parte de nuestra historia.</p>
         </div>
         <a class="shared-gallery-enter" href="galeria-fiesta.html">ENTRAR A LA GALERÍA <span aria-hidden="true">↗</span></a>
@@ -378,6 +378,8 @@
   <script src="js/gallery-config.js"></script>
   <script src="js/app.js"></script>
   <script src="js/photo-booth-config.js"></script>
+  <script src="js/drive-gallery.js"></script>
+  <script src="js/shared-gallery-home.js"></script>
   <script src="js/photo-booth.js"></script>
   <script src="js/shared-gallery-entry.js"></script>
 </body>

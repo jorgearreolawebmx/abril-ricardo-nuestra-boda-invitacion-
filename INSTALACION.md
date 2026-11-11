@@ -60,14 +60,17 @@ La contraseña no se guarda en HTML, CSS, JavaScript ni en GitHub. Se valida en 
 - El archivo descargado contiene únicamente la foto y el logotipo, no el marco floral decorativo.
 - Al guardarla en Drive se almacena en `FOTOS_CON_LOGO`.
 
-### Las fotos de la fiesta
-Los invitados pueden enviar fotografías, videos, mensajes y saludos de voz. Se almacenan en carpetas separadas:
-- `FOTOS_DE_LA_FIESTA`
+### Las fotos de la fiesta y la galería infinita
+Al entrar a `galeria-fiesta.html`, los invitados ven primero una galería infinita que consulta las fotografías compartidas en Drive. El botón **COMPARTIR UN RECUERDO** lleva al formulario que conserva las opciones de tomar o elegir una foto, subir video, escribir un mensaje y grabar un saludo.
+
+Las fotografías de `FOTOS_DE_LA_FIESTA` y `FOTOS_CON_LOGO` se muestran en la galería pública. La portada de la invitación muestra automáticamente las tres fotos más recientes. Si todavía no se han compartido fotos, se muestran las tres imágenes de muestra incluidas en `assets/`.
+
+Los videos, mensajes y saludos de voz se almacenan en carpetas separadas y permanecen privados:
 - `VIDEOS_DE_LA_FIESTA`
 - `MENSAJES`
 - `SALUDOS_DE_VOZ`
 
-Los invitados solo envían recuerdos. No tienen acceso al álbum privado.
+Los invitados no tienen acceso al álbum privado ni al panel de los novios.
 
 ## 4. Panel privado de los novios
 
@@ -85,7 +88,11 @@ La sesión del panel dura hasta 6 horas. Las consultas de lista, miniaturas y ar
 
 ## 5. Privacidad de Drive
 
-Los archivos se guardan como privados. El backend no publica las fotos ni audios mediante enlaces públicos; los entrega al panel solo después de validar la sesión.
+Privacidad y visibilidad:
+- Las fotografías destinadas a la galería pública (`FOTOS_DE_LA_FIESTA` y `FOTOS_CON_LOGO`) se configuran en Drive como **cualquier persona con el enlace: lector** para que la invitación pueda mostrarlas sin pedir inicio de sesión.
+- Esto significa que cualquier persona que tenga el enlace de la invitación puede ver esas fotografías.
+- Los videos, mensajes y saludos de voz no se publican por enlace; permanecen privados y sus contenidos solo se consultan en el panel después de validar la sesión.
+- El listado público de Apps Script devuelve únicamente archivos de imagen. No enumera videos, mensajes ni audios.
 
 La carpeta principal utilizada es:
 
@@ -114,3 +121,7 @@ La cámara y el micrófono requieren HTTPS y permiso del invitado. GitHub Pages 
 4. Abre **PANEL DE LOS NOVIOS** e inicia sesión con la contraseña configurada.
 5. Comprueba que aparezcan la foto, el audio y el nombre del invitado.
 6. Reproduce el audio dentro del panel y descarga una fotografía.
+
+## 9. Actualización V26 — Galería infinita de Drive
+
+En esta versión, el endpoint `action=publicPhotos` es público y devuelve exclusivamente fotografías. Para activarlo, actualiza `AppsScript/Code.gs` y despliega una nueva versión en la misma URL `/exec`. No hace falta cambiar `js/photo-booth-config.js`.

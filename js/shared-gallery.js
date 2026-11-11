@@ -359,14 +359,21 @@
         messageText: messageText,
         senderName: pendingSenderName
       });
-      if (result.privateStorage === false) {
-        status('El archivo se guardó, pero no se pudo confirmar que quedara privado. Revisa los permisos de Drive.', true);
+      const isPhoto = pendingKind === 'photo';
+      if ((isPhoto && result.galleryVisible === false) || (!isPhoto && result.privateStorage === false)) {
+        status(isPhoto
+          ? 'La fotografía se guardó, pero no se pudo mostrar en la galería pública. Revisa los permisos de Drive.'
+          : 'El recuerdo se guardó, pero no se pudo confirmar su almacenamiento privado. Revisa los permisos de Drive.', true);
         button.disabled = false;
         button.textContent = 'REVISAR PERMISOS';
         return;
       }
-      status('¡Gracias! Tu recuerdo se guardó en el álbum privado de Abril & Ricardo.');
+      status(isPhoto
+        ? '¡Gracias! Tu fotografía ya puede aparecer en la galería compartida.'
+        : '¡Gracias! Tu recuerdo se guardó en el álbum privado de Abril & Ricardo.');
       button.textContent = 'COMPARTIDO';
+      if (isPhoto && window.refreshARDriveInfiniteGallery) await window.refreshARDriveInfiniteGallery();
+      if (isPhoto && window.refreshARSharedGalleryHome) window.refreshARSharedGalleryHome();
       await loadGallery();
     } catch (err) {
       status(err.message || 'No se pudo compartir. Intenta nuevamente.', true);

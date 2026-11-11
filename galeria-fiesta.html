@@ -10,20 +10,34 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Marcellus&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/shared-gallery.css">
+  <link rel="stylesheet" href="css/infinite-gallery.css">
 </head>
-<body>
+<body class="ag-gallery-page">
+  <section class="ag-drive-stage" aria-label="Galería infinita de fotografías compartidas">
+    <div class="ag-drive-canvas" id="agDriveInfiniteGallery"></div>
+    <div class="ag-drive-topbar">
+      <a class="ag-stage-back" href="index.html#fotos-fiesta">‹ Volver</a>
+      <span class="ag-stage-label">ABRIL &amp; RICARDO · RECUERDOS COMPARTIDOS</span>
+      <button class="ag-stage-refresh" id="agRefreshDriveGallery" type="button" aria-label="Actualizar fotografías">↻</button>
+    </div>
+    <div class="ag-drive-stage-bottom">
+      <p id="agDriveGalleryStatus" role="status" aria-live="polite">Cargando las fotografías compartidas…</p>
+      <button id="agGoToShare" type="button">COMPARTIR UN RECUERDO <span aria-hidden="true">↓</span></button>
+    </div>
+  </section>
+
   <video class="ag-bg-video" autoplay muted loop playsinline aria-hidden="true">
     <source src="assets/fondo-botanico.mp4" type="video/mp4">
   </video>
   <div class="ag-bg-wash" aria-hidden="true"></div>
 
-  <main class="ag-shell">
+  <main class="ag-shell" id="agUploadSection">
     <a class="ag-back" href="index.html#fotos-fiesta">‹ Volver a la invitación</a>
 
     <header class="ag-header">
-      <p class="ag-eyebrow">UN RECUERDO PARA COMPARTIR</p>
-      <h1>Abril <span>&</span> Ricardo</h1>
-      <p class="ag-intro">Comparte los mejores momentos de nuestra boda.</p>
+      <p class="ag-eyebrow">FORMA PARTE DE NUESTROS RECUERDOS</p>
+      <h1>Comparte tu <span>momento</span></h1>
+      <p class="ag-intro">Sube tus fotografías para que todos podamos volver a vivir la celebración.</p>
     </header>
 
     <section class="ag-actions" aria-label="Opciones para compartir">
@@ -54,7 +68,7 @@
     <section class="ag-private-note">
       <p class="ag-eyebrow">UN RECUERDO PARA COMPARTIR</p>
       <h2>Tu recuerdo llegará a los novios</h2>
-      <p>Las fotografías, videos, mensajes y saludos que compartas se guardarán en el álbum privado de Abril & Ricardo.</p>
+      <p>Las fotografías que compartas aparecerán en esta galería para que todos puedan verlas. Los videos, mensajes y saludos de voz se guardarán en el álbum privado de Abril & Ricardo.</p>
       <span>Gracias por formar parte de su historia.</span><p id="agPrivateNoteStatus" class="ag-private-note-status" role="status" aria-live="polite">Los novios podrán ver lo que compartas en su panel privado.</p>
     </section>
 
@@ -76,6 +90,9 @@
   </div>
 
   <script src="js/photo-booth-config.js"></script>
+  <script src="js/drive-gallery.js"></script>
+  <script src="js/infinite-gallery.js"></script>
+  <script src="js/drive-infinite-gallery.js"></script>
   <script src="js/shared-gallery.js"></script>
 </body>
 </html>

@@ -121,3 +121,54 @@ button,a{font:inherit}
 .ag-private-note>p:not(.ag-eyebrow) { margin:0 auto;max-width:330px;color:#82725a;font:16px/1.4 "Cormorant Garamond",Georgia,serif; }
 .ag-private-note>span { display:block;margin:12px 0 0;color:#9b805d;font:italic 14px "Cormorant Garamond",Georgia,serif; }
 .ag-private-note-status { margin:10px 0 0;color:#7d785b;font:10px "Marcellus",Georgia,serif; }
+
+
+/* Galería infinita conectada a las fotografías de Drive. */
+.ag-gallery-page { background:#eee4d4; }
+.ag-drive-stage {
+  position:relative;width:100%;height:100svh;min-height:560px;overflow:hidden;
+  isolation:isolate;background:#211a15;
+}
+.ag-drive-canvas { position:absolute;inset:0;width:100%;height:100%; }
+.ag-drive-canvas.ig-root { position:absolute;inset:0;width:100%;height:100%; }
+.ag-drive-topbar {
+  position:absolute;z-index:60;top:max(14px,env(safe-area-inset-top));left:0;right:0;
+  display:flex;align-items:center;justify-content:space-between;gap:10px;padding:0 14px;
+  pointer-events:none;
+}
+.ag-drive-topbar a,.ag-drive-topbar button { pointer-events:auto; }
+.ag-stage-back,.ag-stage-refresh {
+  display:grid;place-items:center;min-height:42px;padding:0 14px;border:1px solid rgba(255,255,255,.55);
+  border-radius:30px;background:rgba(25,21,18,.38);color:#fffaf0;text-decoration:none;
+  -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);font:11px "Marcellus",Georgia,serif;
+}
+.ag-stage-refresh { width:42px;padding:0;font:24px Georgia,serif;cursor:pointer; }
+.ag-stage-refresh:disabled { opacity:.55; }
+.ag-stage-label {
+  flex:1;color:rgba(255,250,240,.9);text-align:center;text-shadow:0 1px 10px rgba(0,0,0,.55);
+  font:9px "Marcellus",Georgia,serif;letter-spacing:.12em;
+}
+.ag-drive-stage-bottom {
+  position:absolute;z-index:60;left:14px;right:14px;bottom:max(18px,env(safe-area-inset-bottom));
+  display:flex;flex-direction:column;align-items:center;gap:10px;pointer-events:none;
+}
+.ag-drive-stage-bottom p {
+  margin:0;max-width:min(92%,520px);padding:7px 12px;border-radius:20px;
+  background:rgba(25,21,18,.35);color:rgba(255,250,240,.94);text-align:center;
+  -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);font:12px/1.25 "Cormorant Garamond",Georgia,serif;
+}
+.ag-drive-stage-bottom button {
+  min-height:48px;padding:0 22px;border:1px solid rgba(255,250,240,.82);border-radius:30px;
+  background:rgba(121,86,60,.94);color:#fffaf0;box-shadow:0 8px 22px rgba(0,0,0,.23);
+  font:10px "Marcellus",Georgia,serif;letter-spacing:.12em;pointer-events:auto;cursor:pointer;
+}
+.ag-drive-stage-bottom button span { margin-left:8px;font-size:15px; }
+.ag-upload-section { scroll-margin-top:20px; }
+@media(max-width:520px) {
+  .ag-drive-stage { min-height:520px; }
+  .ag-stage-label { max-width:48%;font-size:8px;line-height:1.4; }
+  .ag-stage-back { min-height:40px;padding:0 11px;font-size:10px; }
+  .ag-stage-refresh { width:40px;min-height:40px; }
+}
+
+.ag-drive-canvas .ig-hint { left:50%;bottom:108px;transform:translateX(-50%);text-align:center; }

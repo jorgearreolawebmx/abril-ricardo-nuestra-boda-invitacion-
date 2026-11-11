@@ -362,14 +362,15 @@
     saveButton.textContent = 'GUARDANDO…';
     try {
       const result = await uploadBlob(await getPhotoBlob());
-      if (result.privateStorage === false) {
-        setStatus('La foto se guardó en Drive, pero no se pudo confirmar su almacenamiento privado. Revisa los permisos de la carpeta.', true);
+      if (result.galleryVisible === false || result.privateStorage === false) {
+        setStatus('La foto se guardó en Drive, pero no se pudo habilitar su visualización en la galería. Revisa los permisos de Drive.', true);
         saveButton.textContent = 'GUARDADA · REVISAR PERMISOS';
         saveButton.disabled = false;
       } else {
-        setStatus('¡Listo! Tu fotografía se guardó en la carpeta privada de Google Drive de los novios.');
+        setStatus('¡Listo! Tu fotografía se guardó y ya puede aparecer en la galería compartida.');
         saveButton.textContent = 'GUARDADA EN DRIVE';
         saveButton.disabled = true;
+        if (window.refreshARSharedGalleryHome) window.refreshARSharedGalleryHome();
       }
     } catch (error) {
       setStatus(error.message + ' También puedes descargar tu fotografía.', true);

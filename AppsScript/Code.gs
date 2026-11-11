@@ -6,8 +6,8 @@
  *   Ejecutar como: propietario del script
  *   Acceso: Cualquier persona
  *
- * IMPORTANTE: cada archivo compartido se marca "cualquier persona con el enlace: lector"
- * para que los invitados puedan verlo y descargarlo desde la galería.
+ * Las fotografías de la galería se marcan "cualquier persona con el enlace: lector".
+ * Videos, mensajes y saludos de voz permanecen privados y requieren sesión de panel.
  */
 const AR_ROOT_FOLDER_ID = '1P0JIDSpjX2x55Roy_0xc4y-QL-GHp9f0';
 // La contraseña se guarda en Script Properties de Apps Script, nunca en GitHub ni en JavaScript público.
@@ -44,6 +44,12 @@ function doGet(e) {
   const callback = String(params.callback || '');
   const action = String(params.action || '');
   const token = String(params.token || '');
+
+  // Esta ruta pública enumera exclusivamente fotografías destinadas a la galería de invitados.
+  // No devuelve videos, mensajes ni saludos de voz.
+  if (action === 'publicPhotos') {
+    return jsonpResponse_(callback, listPublicGalleryPhotos_(params.limit));
+  }
 
   if (action === 'list' || action === 'thumbnail' || action === 'media' || action === 'checkPanel') {
     if (!isValidPanelToken_(token)) {
@@ -104,6 +110,19 @@ function setFilePrivate_(file) {
       file.setSharing(DriveApp.Access.PRIVATE, DriveApp.Permission.VIEW);
     }
     return file.getSharingAccess() === DriveApp.Access.PRIVATE;
+  } catch (error) {
+    return false;
+  }
+}
+
+// Solo las fotografías de la galería colaborativa tienen acceso de lectura por enlace.
+// Los videos, mensajes y audios permanecen privados y solo se muestran en el panel autenticado.
+function setFilePublicForGallery_(file) {
+  try {
+    if (file.getSharingAccess() !== DriveApp.Access.ANYONE_WITH_LINK) {
+      file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+    }
+    return file.getSharingAccess() === DriveApp.Access.ANYONE_WITH_LINK;
   } catch (error) {
     return false;
   }
@@ -205,7 +224,8 @@ function doPost(e) {
       file.setDescription('Compartido en la boda de Abril & Ricardo · 5 de agosto de 2027.');
     }
 
-    const privateStorage = setFilePrivate_(file);
+    const isGalleryPhoto = (kind === 'booth' || kind === 'photo') && mimeType.indexOf('image/') === 0;
+    const accessConfirmed = isGalleryPhoto ? setFilePublicForGallery_(file) : setFilePrivate_(file);
 
     result = {
       type: 'AR_PHOTO_UPLOAD_RESULT',
@@ -216,9 +236,12 @@ function doPost(e) {
       fileId: file.getId(),
       fileName: file.getName(),
       fileUrl: file.getUrl(),
-      privateStorage: privateStorage
+      privateStorage: isGalleryPhoto ? null : accessConfirmed,
+      galleryVisible: isGalleryPhoto ? accessConfirmed : false
     };
-    if (!privateStorage) {
+    if (isGalleryPhoto && !accessConfirmed) {
+      result.message = 'La fotografía se guardó, pero Drive no permitió habilitar su visualización en la galería.';
+    } else if (!isGalleryPhoto && !accessConfirmed) {
       result.message = 'El archivo se guardó, pero no fue posible confirmar que quedara privado. Revisa los permisos de Drive.';
     }
   } catch (error) {
@@ -253,8 +276,9 @@ function listSharedGallery_() {
       const file = files.next();
       const id = file.getId();
       const mime = file.getMimeType();
-      // Revoca el acceso público por enlace de los archivos del álbum.
-      const privateStorage = setFilePrivate_(file);
+      // Las fotos siguen visibles en la galería pública; los demás recuerdos se mantienen privados.
+      const isGalleryPhoto = (kind === 'booth' || kind === 'photo') && mime.indexOf('image/') === 0;
+      const accessConfirmed = isGalleryPhoto ? setFilePublicForGallery_(file) : setFilePrivate_(file);
 
       let description = file.getDescription() || '';
       let senderName = '';
@@ -277,7 +301,8 @@ function listSharedGallery_() {
         description: description,
         senderName: senderName,
         createdAt: file.getDateCreated().toISOString(),
-        privateStorage: privateStorage,
+        privateStorage: isGalleryPhoto ? null : accessConfirmed,
+        galleryVisible: isGalleryPhoto ? accessConfirmed : false,
         downloadAvailable: true
       });
     }
@@ -288,6 +313,42 @@ function listSharedGallery_() {
   });
 
   return { success: true, items: items.slice(0, 200) };
+}
+
+function listPublicGalleryPhotos_(requestedLimit) {
+  const items = [];
+  const publicKinds = ['booth', 'photo'];
+  const numericLimit = Number(requestedLimit || 80);
+  const limit = Math.max(1, Math.min(200, isFinite(numericLimit) ? Math.floor(numericLimit) : 80));
+
+  publicKinds.forEach(function(kind) {
+    const folder = getOrCreateFolder_(AR_FOLDERS[kind]);
+    const files = folder.getFiles();
+    while (files.hasNext()) {
+      const file = files.next();
+      const mime = String(file.getMimeType() || '').toLowerCase();
+      if (mime.indexOf('image/') !== 0) continue;
+
+      // Si una política de la cuenta impide compartir por enlace, omitimos la foto de la vista pública.
+      if (!setFilePublicForGallery_(file)) continue;
+
+      const id = file.getId();
+      items.push({
+        id: id,
+        kind: kind,
+        mimeType: mime,
+        createdAt: file.getDateCreated().toISOString(),
+        thumbnailUrl: 'https://drive.google.com/thumbnail?id=' + encodeURIComponent(id) + '&sz=w1400',
+        imageUrl: 'https://drive.google.com/uc?export=view&id=' + encodeURIComponent(id)
+      });
+    }
+  });
+
+  items.sort(function(a, b) {
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+  });
+
+  return { success: true, items: items.slice(0, limit) };
 }
 
 function isWeddingGalleryFile_(file) {
