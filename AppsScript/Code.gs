@@ -57,7 +57,8 @@ function doPost(e) {
   let result = {
     type: 'AR_PHOTO_UPLOAD_RESULT',
     success: false,
-    message: 'No se pudo guardar el archivo.'
+    message: 'No se pudo guardar el archivo.',
+    requestId: (e && e.parameter && e.parameter.requestId) ? String(e.parameter.requestId) : ''
   };
 
   try {
@@ -96,15 +97,11 @@ function doPost(e) {
     if (kind === 'message' && messageText) file.setDescription(messageText);
     else file.setDescription('Compartido en la boda de Abril & Ricardo · 5 de agosto de 2027.');
 
-    let publicLinkEnabled = true;
-    try {
-      file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
-    } catch (sharingError) {
-      publicLinkEnabled = false;
-    }
+    const publicLinkEnabled = ensurePublicLink_(file);
 
     result = {
       type: 'AR_PHOTO_UPLOAD_RESULT',
+      requestId: result.requestId,
       success: true,
       message: 'Archivo guardado correctamente.',
       kind: kind,
@@ -122,7 +119,7 @@ function doPost(e) {
 
   const safeResult = JSON.stringify(result).replace(/</g, '\\u003c');
   const html = '<!doctype html><html lang="es"><meta charset="utf-8"><body>' +
-    '<script>window.parent.postMessage(' + safeResult + ', "*");</script>' +
+    '<script>window.top.postMessage(' + safeResult + ', "*");</script>' +
     '<p>Proceso terminado.</p></body></html>';
 
   return HtmlService.createHtmlOutput(html)
@@ -133,6 +130,19 @@ function getOrCreateFolder_(name) {
   const root = DriveApp.getFolderById(AR_ROOT_FOLDER_ID);
   const folders = root.getFoldersByName(name);
   return folders.hasNext() ? folders.next() : root.createFolder(name);
+}
+
+function ensurePublicLink_(file) {
+  try {
+    let access = file.getSharingAccess();
+    if (access !== DriveApp.Access.ANYONE_WITH_LINK) {
+      file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+      access = file.getSharingAccess();
+    }
+    return access === DriveApp.Access.ANYONE_WITH_LINK;
+  } catch (error) {
+    return false;
+  }
 }
 
 function listSharedGallery_() {
@@ -148,9 +158,12 @@ function listSharedGallery_() {
       const file = files.next();
       const id = file.getId();
       const mime = file.getMimeType();
-      const previewUrl = kind === 'video' || kind === 'audio'
+      const isPublic = ensurePublicLink_(file);
+      const viewUrl = 'https://drive.google.com/file/d/' + id + '/view?usp=sharing';
+      const downloadUrl = 'https://drive.google.com/uc?export=download&id=' + id;
+      const previewUrl = (kind === 'video' || kind === 'audio')
         ? 'https://drive.google.com/file/d/' + id + '/preview'
-        : 'https://drive.google.com/uc?export=view&id=' + id;
+        : 'https://drive.google.com/thumbnail?id=' + id + '&sz=w1600';
 
       items.push({
         id: id,
@@ -159,8 +172,10 @@ function listSharedGallery_() {
         mimeType: mime,
         description: file.getDescription() || '',
         createdAt: file.getDateCreated().toISOString(),
+        publicLinkEnabled: isPublic,
         previewUrl: previewUrl,
-        downloadUrl: 'https://drive.google.com/uc?export=download&id=' + id
+        viewUrl: viewUrl,
+        downloadUrl: downloadUrl
       });
     }
   });
@@ -169,7 +184,7 @@ function listSharedGallery_() {
     return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
   });
 
-  return { success: true, items: items.slice(0, 150) };
+  return { success: true, items: items.slice(0, 200) };
 }
 
 function sanitizeFileName_(name) {

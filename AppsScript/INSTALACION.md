@@ -69,3 +69,19 @@ La cámara en vivo requiere HTTPS o localhost y que el invitado autorice el perm
 El endpoint de subida es público para que los invitados no necesiten iniciar sesión. Los archivos compartidos con enlace pueden ser vistos por cualquier persona que tenga ese enlace. Comparte la invitación y la galería teniendo esto presente.
 
 No publiques el Apps Script antes de revisar que la cuenta propietaria sea la correcta y que la carpeta de destino sea la indicada.
+
+
+## 8. Panel de consulta para los invitados
+
+La página `album-recuerdos.html` es el panel de solo lectura del álbum compartido. Desde `galeria-fiesta.html`, los invitados entran mediante **VER ÁLBUM DE RECUERDOS**.
+
+El panel consulta la lista de archivos en Drive y los organiza en:
+- Todo
+- Fotos (incluye las fotos de la cabina con logotipo)
+- Videos
+- Mensajes
+- Audios
+
+El backend intenta corregir automáticamente el permiso de lectura de cada archivo y devuelve una URL de miniatura de Drive. Si la política de Google no permite compartir un archivo por enlace, aparecerá como no disponible en lugar de mostrar una miniatura rota.
+
+Al actualizar `AppsScript/Code.gs`, debes ir a **Implementar → Gestionar implementaciones → Editar → Nueva versión → Implementar**. La URL `/exec` se conserva; no es necesario volver a pegarla en `js/photo-booth-config.js`.

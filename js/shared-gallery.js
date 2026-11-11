@@ -239,6 +239,7 @@
   function postToAppsScript(fields) {
     return new Promise((resolve, reject) => {
       if (!endpoint) return reject(new Error('La conexión con Google Drive aún no está configurada.'));
+      const requestId = 'gallery_' + Date.now() + '_' + Math.random().toString(36).slice(2);
       const target = 'arGalleryUpload_' + Date.now();
       const iframe = document.createElement('iframe');
       iframe.name = target; iframe.hidden = true; iframe.title = 'Enviando recuerdo a Google Drive';
@@ -250,12 +251,17 @@
         input.type = 'hidden'; input.name = key; input.value = value;
         form.appendChild(input);
       });
+      const requestField = document.createElement('input');
+      requestField.type = 'hidden';
+      requestField.name = 'requestId';
+      requestField.value = requestId;
+      form.appendChild(requestField);
       document.body.appendChild(form);
       let settled = false;
       const cleanup = () => { window.removeEventListener('message', onMessage); form.remove(); iframe.remove(); };
       const finish = (fn, value) => { if (settled) return; settled = true; cleanup(); fn(value); };
       const onMessage = event => {
-        if (event.source !== iframe.contentWindow || !event.data || event.data.type !== 'AR_PHOTO_UPLOAD_RESULT') return;
+        if (!event.data || event.data.type !== 'AR_PHOTO_UPLOAD_RESULT' || event.data.requestId !== requestId) return;
         if (event.data.success) finish(resolve, event.data);
         else finish(reject, new Error(event.data.message || 'Google Drive no pudo guardar el archivo.'));
       };
@@ -283,8 +289,7 @@
         action: 'upload',
         kind: pendingKind,
         fileData: base64,
-        imageData: base64,
-        mimeType: pendingMime,
+        mimeType: pendingMime.split(';')[0].trim().toLowerCase(),
         fileName: pendingName,
         messageText: messageText
       });
@@ -355,10 +360,27 @@
         const audio = document.createElement('audio'); audio.controls = true; audio.src = item.downloadUrl;
         wrap.appendChild(audio); card.appendChild(wrap);
       } else {
-        const img = document.createElement('img'); img.className = 'ag-card-media';
-        img.loading = 'lazy'; img.src = item.previewUrl; img.alt = 'Fotografía compartida en la boda';
-        img.addEventListener('click', () => openLightbox('image', item.previewUrl));
-        card.appendChild(img);
+        if (item.publicLinkEnabled === false) {
+          const locked = document.createElement('div');
+          locked.className = 'ag-card-message';
+          locked.textContent = 'Este recuerdo se guardó en Drive, pero no tiene acceso público habilitado.';
+          card.appendChild(locked);
+        } else {
+          const img = document.createElement('img'); img.className = 'ag-card-media';
+          img.loading = 'lazy'; img.src = item.previewUrl; img.alt = 'Fotografía compartida en la boda';
+          img.addEventListener('click', () => openLightbox('image', item.previewUrl));
+          img.addEventListener('error', () => {
+            const fallback = document.createElement('div');
+            fallback.className = 'ag-card-message';
+            const message = document.createElement('span');
+            message.textContent = 'No se pudo mostrar la miniatura.';
+            const link = document.createElement('a');
+            link.href = item.viewUrl || item.downloadUrl; link.target = '_blank'; link.rel = 'noopener';
+            link.textContent = 'Abrir en Google Drive';
+            fallback.append(message, link); img.replaceWith(fallback);
+          }, { once: true });
+          card.appendChild(img);
+        }
       }
       const meta = document.createElement('div'); meta.className = 'ag-card-meta';
       const date = document.createElement('span');

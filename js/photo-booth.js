@@ -286,6 +286,7 @@
       reader.onerror = () => reject(new Error('No se pudo leer el archivo.'));
       reader.onload = () => {
         const base64 = String(reader.result).split(',')[1];
+        const requestId = 'booth_' + Date.now() + '_' + Math.random().toString(36).slice(2);
         const target = 'arPhotoUpload_' + Date.now();
         const iframe = document.createElement('iframe');
         iframe.name = target;
@@ -300,7 +301,7 @@
           action: 'upload',
           kind: 'booth',
           fileData: base64,
-          imageData: base64,
+          requestId: requestId,
           mimeType: 'image/jpeg',
           fileName: 'Abril_Ricardo_Foto_' + Date.now() + '.jpg',
           source: 'AbrilRicardoPhotoBooth'
@@ -323,12 +324,12 @@
           fn(value);
         };
         const onMessage = event => {
-          if (event.source !== iframe.contentWindow || !event.data || event.data.type !== 'AR_PHOTO_UPLOAD_RESULT') return;
+          if (!event.data || event.data.type !== 'AR_PHOTO_UPLOAD_RESULT' || event.data.requestId !== requestId) return;
           if (event.data.success) finish(resolve, event.data);
           else finish(reject, new Error(event.data.message || 'No se pudo guardar en Drive.'));
         };
         window.addEventListener('message', onMessage);
-        setTimeout(() => finish(reject, new Error('La subida tardó demasiado. Intenta nuevamente.')), 90000);
+        setTimeout(() => finish(reject, new Error('Google no confirmó la subida en 120 segundos. Revisa Drive antes de volver a intentarlo.')), 120000);
         form.submit();
       };
       reader.readAsDataURL(blob);

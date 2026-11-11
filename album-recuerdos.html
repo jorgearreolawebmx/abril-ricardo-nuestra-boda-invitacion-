@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#eee4d4">
+  <meta name="description" content="Álbum compartido de recuerdos de la boda de Abril & Ricardo.">
+  <title>Álbum de recuerdos | Abril & Ricardo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Marcellus&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/album-recuerdos.css">
+</head>
+<body>
+  <video class="ar-album-bg" autoplay muted loop playsinline aria-hidden="true">
+    <source src="assets/fondo-botanico.mp4" type="video/mp4">
+  </video>
+  <div class="ar-album-wash" aria-hidden="true"></div>
+
+  <main class="ar-album-shell">
+    <a class="ar-album-back" href="galeria-fiesta.html">‹ Volver a compartir recuerdos</a>
+
+    <header class="ar-album-header">
+      <p class="ar-album-eyebrow">NUESTRA HISTORIA, EN RECUERDOS</p>
+      <h1>Abril <span>&</span> Ricardo</h1>
+      <p class="ar-album-subtitle">Todos los momentos que nuestros invitados han compartido.</p>
+      <div class="ar-album-stats" aria-live="polite">
+        <div><strong id="arAlbumTotal">—</strong><span>RECUERDOS</span></div>
+        <div><strong id="arAlbumPhotos">—</strong><span>FOTOS</span></div>
+        <div><strong id="arAlbumVideos">—</strong><span>VIDEOS</span></div>
+        <div><strong id="arAlbumMessages">—</strong><span>MENSAJES</span></div>
+      </div>
+    </header>
+
+    <section class="ar-album-panel">
+      <div class="ar-album-toolbar">
+        <div>
+          <p class="ar-album-eyebrow">ÁLBUM COMPARTIDO</p>
+          <h2>Los recuerdos de la fiesta</h2>
+        </div>
+        <button class="ar-album-refresh" id="arAlbumRefresh" type="button" aria-label="Actualizar álbum">↻</button>
+      </div>
+
+      <nav class="ar-album-filters" aria-label="Filtrar recuerdos">
+        <button class="is-active" data-filter="all" type="button">Todo <span id="arCountAll">0</span></button>
+        <button data-filter="photo" type="button">Fotos <span id="arCountPhotos">0</span></button>
+        <button data-filter="video" type="button">Videos <span id="arCountVideos">0</span></button>
+        <button data-filter="message" type="button">Mensajes <span id="arCountMessages">0</span></button>
+        <button data-filter="audio" type="button">Audios <span id="arCountAudios">0</span></button>
+      </nav>
+
+      <div class="ar-album-status" id="arAlbumStatus" role="status" aria-live="polite">Conectando con el álbum de Drive…</div>
+      <div class="ar-album-grid" id="arAlbumGrid">
+        <div class="ar-album-empty"><span>♡</span><h3>Estamos preparando los recuerdos</h3><p>En cuanto se carguen desde Drive, aparecerán aquí.</p></div>
+      </div>
+      <p class="ar-album-updated" id="arAlbumUpdated">El álbum se actualiza automáticamente.</p>
+    </section>
+
+    <footer class="ar-album-footer">
+      <p>Gracias por formar parte de nuestra historia.</p>
+      <span>Abril & Ricardo · 5 de agosto de 2027</span>
+    </footer>
+  </main>
+
+  <div class="ar-album-lightbox" id="arAlbumLightbox" hidden>
+    <button id="arAlbumLightboxClose" type="button" aria-label="Cerrar">×</button>
+    <div id="arAlbumLightboxContent"></div>
+  </div>
+
+  <script src="js/photo-booth-config.js"></script>
+  <script src="js/album-recuerdos.js"></script>
+</body>
+</html>

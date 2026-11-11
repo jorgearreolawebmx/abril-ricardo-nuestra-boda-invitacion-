@@ -149,3 +149,15 @@ ACTUALIZACIÓN V19 — CABINA Y ÁLBUM COLABORATIVO
 - El feed colaborativo muestra los recuerdos compartidos, incluidas las fotografías de la cabina con logotipo.
 - Para activar la subida y lectura de Drive, seguir AppsScript/INSTALACION.md y configurar la URL /exec en js/photo-booth-config.js.
 - Sin URL de Apps Script configurada, la interfaz no simula una subida: informa que falta conectar Drive.
+
+
+ACTUALIZACIÓN V21 — PANEL DE ÁLBUM DE INVITADOS
+- Se añadió album-recuerdos.html como panel exclusivo de consulta para invitados.
+- El panel muestra filtros Todo, Fotos, Videos, Mensajes y Audios.
+- Las fotos individuales de la cabina (booth) también aparecen en Fotos.
+- Los mensajes aparecen como tarjetas de texto; los videos y audios se abren con el reproductor de Drive.
+- Cada recuerdo tiene acceso a descarga/Drive cuando está compartido por enlace.
+- Se actualizó AppsScript/Code.gs para intentar habilitar acceso de lector a los archivos al subirlos y al listarlos.
+- Las miniaturas de imágenes usan el endpoint thumbnail de Google Drive, con enlace alternativo a la ficha del archivo.
+- Se añadió el botón VER ÁLBUM DE RECUERDOS en galeria-fiesta.html.
+- Para que las mejoras del backend funcionen, hay que actualizar Apps Script con el nuevo Code.gs y desplegar una nueva versión de la misma implementación.
