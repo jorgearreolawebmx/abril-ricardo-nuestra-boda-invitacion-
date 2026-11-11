@@ -16,10 +16,11 @@
   <!-- El video del sobre ocupa únicamente el lienzo móvil, incluso cuando se abre desde escritorio. -->
   <section class="opening-screen" id="openingScreen" aria-label="Abrir invitación">
     <div class="opening-frame">
-      <video class="opening-video" id="openingVideo" playsinline muted preload="auto" poster="assets/sobre-poster.jpg">
+      <video class="opening-video" id="openingVideo" playsinline muted preload="metadata" poster="assets/sobre-poster.jpg">
         <source src="assets/animacion-sobre.mp4" type="video/mp4">
       </video>
       <button class="seal-hotspot" id="sealHotspot" type="button" aria-label="Tocar el sello dorado para abrir la invitación"></button>
+      <button class="skip-envelope-button" id="skipEnvelopeButton" type="button">SALTAR SOBRE · ENTRAR A LA INVITACIÓN</button>
       <div class="opening-caption" id="openingCaption">
         <span></span><p>Toca el sello para abrir tu invitación</p><span></span>
       </div>

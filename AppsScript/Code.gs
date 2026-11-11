@@ -318,58 +318,69 @@ function listSharedGallery_() {
 
 function clearPublicGalleryCache_() {
   const cache = CacheService.getScriptCache();
-  [3, 40, 60].forEach(function(limit) {
+  cache.remove('AR_PUBLIC_PHOTOS_V28_ALL');
+  // Limpia también las claves anteriores si quedaron en caché de la versión previa.
+  [3, 20, 24, 36, 40, 60].forEach(function(limit) {
     cache.remove('AR_PUBLIC_PHOTOS_V27_' + limit);
   });
 }
 
 function listPublicGalleryPhotos_(requestedLimit) {
-  const numericLimit = Number(requestedLimit || 40);
-  const limit = Math.max(1, Math.min(60, isFinite(numericLimit) ? Math.floor(numericLimit) : 40));
+  const numericLimit = Number(requestedLimit || 24);
+  const limit = Math.max(1, Math.min(60, isFinite(numericLimit) ? Math.floor(numericLimit) : 24));
   const cache = CacheService.getScriptCache();
-  const cacheKey = 'AR_PUBLIC_PHOTOS_V27_' + limit;
+  const cacheKey = 'AR_PUBLIC_PHOTOS_V28_ALL';
   const cached = cache.get(cacheKey);
+  let allItems = null;
+
   if (cached) {
-    try { return JSON.parse(cached); } catch (cacheError) { cache.remove(cacheKey); }
+    try {
+      const parsed = JSON.parse(cached);
+      if (parsed && Array.isArray(parsed.items)) allItems = parsed.items;
+    } catch (cacheError) {
+      cache.remove(cacheKey);
+    }
   }
 
-  const items = [];
-  const publicKinds = ['booth', 'photo'];
-  publicKinds.forEach(function(kind) {
-    const folder = getOrCreateFolder_(AR_FOLDERS[kind]);
-    const files = folder.getFiles();
-    while (files.hasNext()) {
-      const file = files.next();
-      const mime = String(file.getMimeType() || '').toLowerCase();
-      if (mime.indexOf('image/') !== 0) continue;
+  if (!allItems) {
+    const items = [];
+    const publicKinds = ['booth', 'photo'];
+    publicKinds.forEach(function(kind) {
+      const folder = getOrCreateFolder_(AR_FOLDERS[kind]);
+      const files = folder.getFiles();
+      while (files.hasNext()) {
+        const file = files.next();
+        const mime = String(file.getMimeType() || '').toLowerCase();
+        if (mime.indexOf('image/') !== 0) continue;
 
-      // Los permisos se asignan una sola vez al guardar la foto. Aquí solo los verificamos;
-      // no se modifica Drive durante cada visita a la galería.
-      let publicAccess = false;
-      try { publicAccess = file.getSharingAccess() === DriveApp.Access.ANYONE_WITH_LINK; }
-      catch (permissionError) { publicAccess = false; }
-      if (!publicAccess) continue;
+        // Se revisa el permiso público al construir la caché; nunca se cambian permisos aquí.
+        let publicAccess = false;
+        try { publicAccess = file.getSharingAccess() === DriveApp.Access.ANYONE_WITH_LINK; }
+        catch (permissionError) { publicAccess = false; }
+        if (!publicAccess) continue;
 
-      const id = file.getId();
-      items.push({
-        id: id,
-        kind: kind,
-        mimeType: mime,
-        createdAt: file.getDateCreated().toISOString(),
-        thumbnailUrl: 'https://drive.google.com/thumbnail?id=' + encodeURIComponent(id) + '&sz=w640',
-        imageUrl: 'https://drive.google.com/uc?export=view&id=' + encodeURIComponent(id)
-      });
-    }
-  });
+        const id = file.getId();
+        items.push({
+          id: id,
+          kind: kind,
+          mimeType: mime,
+          createdAt: file.getDateCreated().toISOString(),
+          thumbnailUrl: 'https://drive.google.com/thumbnail?id=' + encodeURIComponent(id) + '&sz=w480',
+          imageUrl: 'https://drive.google.com/uc?export=view&id=' + encodeURIComponent(id)
+        });
+      }
+    });
 
-  items.sort(function(a, b) {
-    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-  });
+    items.sort(function(a, b) {
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
+    // Una única consulta compartida sirve tanto a los 3 marcos como a la galería completa.
+    allItems = items.slice(0, 60);
+    try { cache.put(cacheKey, JSON.stringify({ success: true, items: allItems }), 180); }
+    catch (cacheError) { /* La galería sigue funcionando sin caché. */ }
+  }
 
-  const response = { success: true, items: items.slice(0, limit) };
-  // Metadatos pequeños; la caché evita volver a recorrer y consultar permisos en cada visita.
-  try { cache.put(cacheKey, JSON.stringify(response), 60); } catch (cacheError) { /* caché opcional */ }
-  return response;
+  return { success: true, items: allItems.slice(0, limit) };
 }
 
 function isWeddingGalleryFile_(file) {

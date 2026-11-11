@@ -7,6 +7,9 @@
   const composerBody = $('agComposerBody');
   const composerStatus = $('agComposerStatus');
   const fileInput = $('agFileInput');
+  const cameraPhotoInput = $('agCameraPhotoInput');
+  const cameraFileButton = $('agCameraFileButton');
+  const isMobileCamera = !!(window.matchMedia && window.matchMedia('(pointer: coarse)').matches) || /Android|iPhone|iPad|iPod/i.test(navigator.userAgent || '');
   const cameraModal = $('agCameraModal');
   const cameraVideo = $('agCameraVideo');
   const cameraStatus = $('agCameraStatus');
@@ -86,7 +89,57 @@
     fileInput.click();
   }
 
-  fileInput.addEventListener('change', () => {
+  async function optimizePhotoBlob(file) {
+    const maxSide = 1600;
+    let source = null;
+    let objectUrl = '';
+    try {
+      if (window.createImageBitmap) {
+        try { source = await createImageBitmap(file); } catch (_) { source = null; }
+      }
+      if (!source) {
+        objectUrl = URL.createObjectURL(file);
+        source = await new Promise((resolve, reject) => {
+          const image = new Image();
+          image.onload = () => resolve(image);
+          image.onerror = () => reject(new Error('No se pudo abrir la fotografía.'));
+          image.src = objectUrl;
+        });
+      }
+      const sw = source.width || source.naturalWidth;
+      const sh = source.height || source.naturalHeight;
+      const scale = Math.min(1, maxSide / Math.max(sw, sh));
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.max(1, Math.round(sw * scale));
+      canvas.height = Math.max(1, Math.round(sh * scale));
+      const ctx = canvas.getContext('2d');
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+      ctx.drawImage(source, 0, 0, canvas.width, canvas.height);
+      const blob = await new Promise((resolve, reject) => canvas.toBlob(value => value ? resolve(value) : reject(new Error('No se pudo optimizar la fotografía.')), 'image/jpeg', 0.82));
+      return blob;
+    } finally {
+      if (source && typeof source.close === 'function') source.close();
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    }
+  }
+
+  async function handleSelectedPhoto(file) {
+    if (!file) return;
+    if (file.size > 15 * 1024 * 1024) {
+      status('La fotografía original supera 15 MB. Elige una imagen más ligera.', true);
+      return;
+    }
+    status('Optimizando fotografía para que se comparta más rápido…');
+    try {
+      const optimized = await optimizePhotoBlob(file);
+      makeUploadPanel(optimized, 'Recuerdo_Abril_Ricardo_' + Date.now() + '.jpg', 'image/jpeg', 'photo');
+    } catch (error) {
+      status(error.message || 'No se pudo preparar la fotografía.', true);
+    }
+  }
+
+  fileInput.addEventListener('change', async () => {
     const file = fileInput.files && fileInput.files[0];
     if (!file) return;
     const isImage = file.type.startsWith('image/');
@@ -95,12 +148,18 @@
       alert('Selecciona una fotografía o un video compatible.');
       return;
     }
-    const max = isImage ? 12 * 1024 * 1024 : 18 * 1024 * 1024;
+    const max = isImage ? 15 * 1024 * 1024 : 18 * 1024 * 1024;
     if (file.size > max) {
-      alert(isImage ? 'La fotografía debe pesar menos de 12 MB.' : 'El video debe pesar menos de 18 MB.');
+      alert(isImage ? 'La fotografía original debe pesar menos de 15 MB.' : 'El video debe pesar menos de 18 MB.');
       return;
     }
-    makeUploadPanel(file, file.name, file.type, isImage ? 'photo' : 'video');
+    if (isImage) await handleSelectedPhoto(file);
+    else makeUploadPanel(file, file.name, file.type, 'video');
+  });
+
+  if (cameraPhotoInput) cameraPhotoInput.addEventListener('change', () => {
+    const file = cameraPhotoInput.files && cameraPhotoInput.files[0];
+    if (file) handleSelectedPhoto(file);
   });
 
   function stopCamera() {
@@ -114,36 +173,54 @@
   }
 
   async function takePhoto() {
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      openFilePicker();
+    // En móviles se invoca la cámara del propio sistema operativo para evitar
+    // bloqueos de permisos en navegadores integrados y WebViews.
+    if (isMobileCamera || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || !window.isSecureContext) {
+      if (cameraPhotoInput) { cameraPhotoInput.value = ''; cameraPhotoInput.click(); }
+      else openFilePicker();
       return;
     }
     cameraModal.hidden = false;
-    cameraStatus.textContent = '';
+    cameraStatus.textContent = 'Solicitando permiso para usar la cámara…';
+    let timedOut = false;
+    let timeoutId = 0;
     try {
-      cameraStream = await navigator.mediaDevices.getUserMedia({
+      const streamPromise = navigator.mediaDevices.getUserMedia({
         audio: false,
-        video: { facingMode: { ideal: 'user' }, width: { ideal: 1600 }, height: { ideal: 1200 } }
+        video: { facingMode: { ideal: 'user' }, width: { ideal: 1280 }, height: { ideal: 960 }, frameRate: { ideal: 24, max: 30 } }
+      }).then(stream => {
+        if (timedOut) { stream.getTracks().forEach(track => track.stop()); throw new Error('Tiempo de espera agotado.'); }
+        return stream;
       });
+      const timeoutPromise = new Promise((_, reject) => {
+        timeoutId = window.setTimeout(() => { timedOut = true; reject(new Error('La cámara no respondió.')); }, 12000);
+      });
+      cameraStream = await Promise.race([streamPromise, timeoutPromise]);
+      window.clearTimeout(timeoutId);
       cameraVideo.srcObject = cameraStream;
       await cameraVideo.play();
+      cameraStatus.textContent = '';
     } catch (err) {
+      window.clearTimeout(timeoutId);
       closeCamera();
-      alert('No pudimos abrir la cámara. Puedes elegir una fotografía desde tu celular.');
-      openFilePicker();
+      alert('No pudimos abrir la cámara integrada. Puedes usar «Tomar una foto» para abrir la cámara del teléfono o elegir una imagen.');
     }
   }
 
   $('agTakePhoto').addEventListener('click', takePhoto);
   $('agChooseFile').addEventListener('click', openFilePicker);
   $('agCameraClose').addEventListener('click', closeCamera);
+  if (cameraFileButton) cameraFileButton.addEventListener('click', () => { closeCamera(); if (cameraPhotoInput) { cameraPhotoInput.value = ''; cameraPhotoInput.click(); } else openFilePicker(); });
   cameraModal.addEventListener('click', e => { if (e.target === cameraModal) closeCamera(); });
 
   $('agCaptureButton').addEventListener('click', () => {
     if (!cameraStream || !cameraVideo.videoWidth) return;
     const canvas = document.createElement('canvas');
-    canvas.width = cameraVideo.videoWidth;
-    canvas.height = cameraVideo.videoHeight;
+    const sourceWidth = cameraVideo.videoWidth;
+    const sourceHeight = cameraVideo.videoHeight;
+    const scale = Math.min(1, 1600 / Math.max(sourceWidth, sourceHeight));
+    canvas.width = Math.max(1, Math.round(sourceWidth * scale));
+    canvas.height = Math.max(1, Math.round(sourceHeight * scale));
     const ctx = canvas.getContext('2d');
     ctx.translate(canvas.width, 0);
     ctx.scale(-1, 1);
@@ -155,7 +232,7 @@
       }
       closeCamera();
       makeUploadPanel(blob, 'Recuerdo_Abril_Ricardo_' + Date.now() + '.jpg', 'image/jpeg', 'photo');
-    }, 'image/jpeg', .92);
+    }, 'image/jpeg', .82);
   });
 
   $('agWriteMessage').addEventListener('click', () => {

@@ -13,6 +13,7 @@
   const inviteMusic = $('#inviteMusic');
   const musicToggle = $('#musicToggle');
   const closeEnvelopeButton = $('#closeEnvelope');
+  const skipEnvelopeButton = $('#skipEnvelopeButton');
 
   let started = false;
   let opened = false;
@@ -100,8 +101,22 @@
   }
 
   sealHotspot.addEventListener('click', playEnvelope);
+  if (skipEnvelopeButton) skipEnvelopeButton.addEventListener('click', () => openInvitation());
   openingVideo.addEventListener('ended', openInvitation);
   openingVideo.addEventListener('error', () => { if (started) openInvitation(); });
+
+  // Los enlaces internos de regreso usan ?skipEnvelope=1 para volver directo
+  // al inicio de la invitación, sin reproducir nuevamente el video del sobre.
+  const directEntry = new URLSearchParams(window.location.search).get('skipEnvelope') === '1';
+  if (directEntry) {
+    openInvitation();
+    window.setTimeout(() => {
+      const targetId = (window.location.hash || '#inicio').slice(1);
+      const target = document.getElementById(decodeURIComponent(targetId));
+      if (target) target.scrollIntoView({ behavior: 'auto', block: 'start' });
+    }, 120);
+  }
+
 
   // Cuenta regresiva hasta el inicio de la ceremonia: 5 de agosto de 2027, 12:00 h.
   const eventTime = new Date('2027-08-05T12:00:00-06:00').getTime();

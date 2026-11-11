@@ -172,3 +172,22 @@ button,a{font:inherit}
 }
 
 .ag-drive-canvas .ig-hint { left:50%;bottom:108px;transform:translateX(-50%);text-align:center; }
+
+
+/* Estado de carga liviano mientras responde Drive; evita crear y destruir dos galerías. */
+.ag-drive-canvas.ag-drive-loading {
+  background: #211a15 url('../assets/galeria-infinita-fondo.webp') 50% 48% / cover no-repeat;
+}
+.ag-camera-file-button {
+  display: block;
+  min-height: 42px;
+  margin: 10px auto 0;
+  padding: 0 18px;
+  border: 1px solid rgba(121, 86, 60, .45);
+  border-radius: 25px;
+  background: rgba(255, 250, 240, .9);
+  color: #705b40;
+  font: 10px "Marcellus", Georgia, serif;
+  letter-spacing: .1em;
+  cursor: pointer;
+}

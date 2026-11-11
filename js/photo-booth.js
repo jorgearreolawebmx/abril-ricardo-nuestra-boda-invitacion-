@@ -32,6 +32,8 @@
   const resultCtx = resultCanvas.getContext('2d');
   const uploadUrl = String(window.AR_PHOTO_UPLOAD_URL || '').trim();
   const MAX_FILE_BYTES = 15 * 1024 * 1024;
+  const MAX_OUTPUT_SIDE = 1920;
+  const isMobileCamera = !!(window.matchMedia && window.matchMedia('(pointer: coarse)').matches) || /Android|iPhone|iPad|iPod/i.test(navigator.userAgent || '');
 
   let currentImage = null;
   let logoImage = null;
@@ -122,23 +124,28 @@
   }
 
   function renderResult(image) {
-    const width = image.naturalWidth || image.width;
-    const height = image.naturalHeight || image.height;
+    const sourceWidth = image.naturalWidth || image.width;
+    const sourceHeight = image.naturalHeight || image.height;
+    const resizeScale = Math.min(1, MAX_OUTPUT_SIDE / Math.max(sourceWidth, sourceHeight));
+    const width = Math.max(1, Math.round(sourceWidth * resizeScale));
+    const height = Math.max(1, Math.round(sourceHeight * resizeScale));
     resultCanvas.width = width;
     resultCanvas.height = height;
     resultCtx.clearRect(0, 0, width, height);
+    resultCtx.imageSmoothingEnabled = true;
+    resultCtx.imageSmoothingQuality = 'high';
     resultCtx.drawImage(image, 0, 0, width, height);
 
-    // Solo se añade el logotipo blanco; no se aplica el marco floral ni la fecha.
+    // Solo se añade el logotipo blanco; se exporta a tamaño optimizado para móvil.
     if (logoImage) {
       const ratio = logoImage.width / logoImage.height;
-      const logoWidth = Math.min(width * 0.19, 480);
+      const logoWidth = Math.min(width * 0.19, 360);
       const logoHeight = logoWidth / ratio;
       const x = (width - logoWidth) / 2;
       const bottom = Math.max(height * 0.035, logoHeight * 0.16);
       resultCtx.save();
-      resultCtx.shadowColor = 'rgba(0,0,0,.28)';
-      resultCtx.shadowBlur = Math.max(4, width * 0.003);
+      resultCtx.shadowColor = 'rgba(0,0,0,.24)';
+      resultCtx.shadowBlur = Math.max(3, width * 0.002);
       resultCtx.shadowOffsetY = 2;
       resultCtx.drawImage(logoImage, x, height - logoHeight - bottom, logoWidth, logoHeight);
       resultCtx.restore();
@@ -186,28 +193,44 @@
   }
 
   async function openCamera() {
-    if (!cameraModal || !cameraVideo || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    // En teléfonos usamos el selector/cámara nativa: es más compatible con Safari,
+    // Chrome móvil y navegadores abiertos desde WhatsApp o Instagram.
+    if (isMobileCamera || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || !window.isSecureContext) {
+      input.value = '';
       input.click();
       return;
     }
-    cameraError.textContent = '';
+    if (!cameraModal || !cameraVideo) { input.value = ''; input.click(); return; }
+
+    cameraError.textContent = 'Solicitando permiso para usar la cámara…';
     cameraModal.hidden = false;
     cameraModal.setAttribute('aria-hidden', 'false');
     document.body.classList.add('ar-camera-open');
 
+    let timedOut = false;
+    let timeoutId = 0;
     try {
-      cameraStream = await navigator.mediaDevices.getUserMedia({
+      const streamPromise = navigator.mediaDevices.getUserMedia({
         audio: false,
-        video: { facingMode: { ideal: 'user' }, width: { ideal: 1920 }, height: { ideal: 1080 } }
+        video: { facingMode: { ideal: 'user' }, width: { ideal: 1280 }, height: { ideal: 960 }, frameRate: { ideal: 24, max: 30 } }
+      }).then(stream => {
+        if (timedOut) { stream.getTracks().forEach(track => track.stop()); throw new Error('La solicitud de cámara tardó demasiado.'); }
+        return stream;
       });
+      const timeoutPromise = new Promise((_, reject) => {
+        timeoutId = window.setTimeout(() => { timedOut = true; reject(new Error('La cámara no respondió. Elige una fotografía desde tu dispositivo.')); }, 12000);
+      });
+      cameraStream = await Promise.race([streamPromise, timeoutPromise]);
+      window.clearTimeout(timeoutId);
       cameraVideo.srcObject = cameraStream;
+      cameraVideo.muted = true;
+      cameraVideo.playsInline = true;
       await cameraVideo.play();
-    } catch (error) {
-      closeCamera();
       cameraError.textContent = '';
-      input.value = '';
-      input.click();
-      setStatus('No fue posible abrir la cámara directamente. Puedes tomar la foto con la cámara del teléfono o elegirla de tu galería.');
+    } catch (error) {
+      window.clearTimeout(timeoutId);
+      stopCamera();
+      cameraError.textContent = 'No fue posible iniciar la cámara. Usa «ELEGIR DEL CELULAR» para tomar una foto con la cámara del teléfono o seleccionarla.';
     }
   }
 
@@ -236,8 +259,11 @@
   function capturePhoto() {
     if (!cameraStream || !cameraVideo.videoWidth) return;
     const capture = cameraCapture;
-    capture.width = cameraVideo.videoWidth;
-    capture.height = cameraVideo.videoHeight;
+    const sourceWidth = cameraVideo.videoWidth;
+    const sourceHeight = cameraVideo.videoHeight;
+    const scale = Math.min(1, MAX_OUTPUT_SIDE / Math.max(sourceWidth, sourceHeight));
+    capture.width = Math.max(1, Math.round(sourceWidth * scale));
+    capture.height = Math.max(1, Math.round(sourceHeight * scale));
     const cctx = capture.getContext('2d');
     // Reflejar selfie para que se vea natural, como en el visor frontal.
     cctx.save();
@@ -258,13 +284,13 @@
         showPhoto(image);
       };
       image.src = url;
-    }, 'image/jpeg', .94);
+    }, 'image/jpeg', .84);
   }
 
   function getPhotoBlob() {
     return new Promise((resolve, reject) => {
       resultCanvas.toBlob(blob => blob ? resolve(blob) : reject(new Error('No se pudo preparar la fotografía.')),
-        'image/jpeg', .94);
+        'image/jpeg', .84);
     });
   }
 

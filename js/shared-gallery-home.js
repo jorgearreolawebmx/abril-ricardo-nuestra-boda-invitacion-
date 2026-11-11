@@ -23,17 +23,17 @@
     });
   }
 
-  async function refresh() {
+  async function refresh(force = false) {
     if (!window.ARDriveGallery || loading) return;
     loading = true;
-    try { apply(await window.ARDriveGallery.listPhotos(3)); }
+    try { apply(await window.ARDriveGallery.listPhotos(3, force)); }
     catch (error) { console.warn('[Galería Abril & Ricardo] Se mantienen las fotos de muestra:', error); }
     finally { loading = false; }
   }
 
-  window.refreshARSharedGalleryHome = refresh;
+  window.refreshARSharedGalleryHome = (force = true) => refresh(force);
   refresh();
-  window.addEventListener('focus', refresh);
+  window.addEventListener('focus', () => refresh(false));
   document.addEventListener('visibilitychange', () => {
     if (!document.hidden) refresh();
   });

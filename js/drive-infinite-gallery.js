@@ -12,26 +12,37 @@
     { src: 'assets/galeria-muestra-entrada.webp', full: 'assets/galeria-muestra-entrada.webp', alt: 'Entrada de los recién casados' },
     { src: 'assets/galeria-muestra-salida.webp', full: 'assets/galeria-muestra-salida.webp', alt: 'Salida de los recién casados' }
   ];
+  const isMobile = !!(window.matchMedia && window.matchMedia('(pointer: coarse)').matches) || window.innerWidth <= 700;
+  const photoLimit = isMobile ? 16 : 32;
   let instance = null;
   let loading = false;
   let refreshQueued = false;
   let showingFallback = false;
-  const isMobile = !!(window.matchMedia && window.matchMedia('(pointer: coarse)').matches);
+  let renderedSignature = '';
 
   function setStatus(message) {
     if (status) status.textContent = message;
   }
 
   function render(photos, isFallback) {
+    const signature = photos.map(item => item.src).join('|');
+    if (instance && signature === renderedSignature) {
+      showingFallback = !!isFallback;
+      setStatus(isFallback
+        ? 'Estas son fotografías de muestra. Las imágenes que compartan los invitados aparecerán aquí.'
+        : photos.length + (photos.length === 1 ? ' fotografía compartida' : ' fotografías compartidas'));
+      return;
+    }
     if (instance && typeof instance.destroy === 'function') instance.destroy();
     container.replaceChildren();
+    container.classList.remove('ag-drive-loading');
     instance = window.initInfiniteGallery(container, {
       seed: 'abril-ricardo-galeria-drive-publica',
       photos: photos,
       background: {
         src: 'assets/galeria-infinita-fondo.webp',
         position: '50% 48%',
-        shade: 0.22,
+        shade: 0.24,
         color: '#211a15'
       },
       texts: {
@@ -45,22 +56,26 @@
         region: 'Galería infinita de fotos compartidas de Abril y Ricardo'
       },
       space: {
+        chunkSize: isMobile ? 26 : 30,
         start: { x: 15, y: 15, z: 0 },
-        grid: [3, 3, 2],
-        minSize: 2.0,
-        maxSize: 5.6,
-        sizeBias: 1.42,
-        fogStart: 28,
-        fogEnd: 72
+        grid: isMobile ? [2, 2, 1] : [3, 3, 1],
+        minSize: isMobile ? 2.35 : 2.0,
+        maxSize: isMobile ? 5.0 : 5.5,
+        sizeBias: 1.35,
+        near: 2.3,
+        nearFade: 7,
+        fogStart: isMobile ? 20 : 25,
+        fogEnd: isMobile ? 47 : 58
       },
-      camera: { inertia: 1.08, smoothing: 12, friction: 2.8 },
-      viewer: { enabled: true, scrim: 0.9, maxWidth: 0.9, maxHeight: 0.82, duration: 560 },
-      intro: true,
-      maxTextureSize: isMobile ? 480 : 640,
-      maxDPR: isMobile ? 1.15 : 1.4,
-      loadConcurrency: 4,
-      initialLoadCount: Math.min(6, photos.length)
+      camera: { inertia: isMobile ? 0.78 : 0.95, smoothing: 10, friction: 3.5, wheelSpeed: 0.18, pinchDepth: 12 },
+      viewer: { enabled: true, scrim: 0.88, maxWidth: 0.92, maxHeight: 0.8, duration: 420 },
+      intro: !isMobile,
+      maxTextureSize: isMobile ? 320 : 480,
+      maxDPR: isMobile ? 1 : 1.25,
+      loadConcurrency: isMobile ? 2 : 3,
+      initialLoadCount: Math.min(isMobile ? 4 : 6, photos.length)
     });
+    renderedSignature = signature;
     showingFallback = !!isFallback;
     if (isFallback) {
       setStatus('Estas son fotografías de muestra. Las imágenes que compartan los invitados aparecerán aquí.');
@@ -74,9 +89,9 @@
     if (loading) { refreshQueued = true; return; }
     loading = true;
     if (refreshButton) refreshButton.disabled = true;
-    setStatus('Actualizando fotografías…');
+    setStatus('Cargando fotografías…');
     try {
-      const items = await window.ARDriveGallery.listPhotos(40, force);
+      const items = await window.ARDriveGallery.listPhotos(photoLimit, force);
       const photos = items.map(window.ARDriveGallery.toInfinitePhoto).filter(item => item.src && item.full);
       if (photos.length) render(photos, false);
       else if (!instance || !showingFallback) render(fallbackPhotos, true);
@@ -90,14 +105,15 @@
       if (refreshButton) refreshButton.disabled = false;
       if (refreshQueued) {
         refreshQueued = false;
-        window.setTimeout(refresh, 0);
+        window.setTimeout(() => refresh(false), 0);
       }
     }
   }
 
   if (refreshButton) refreshButton.addEventListener('click', () => refresh(true));
   if (shareButton && uploadSection) shareButton.addEventListener('click', () => uploadSection.scrollIntoView({ behavior: 'smooth', block: 'start' }));
-  window.refreshARDriveInfiniteGallery = refresh;
-  render(fallbackPhotos, true);
+  window.refreshARDriveInfiniteGallery = (force = true) => refresh(force);
+  container.classList.add('ag-drive-loading');
+  setStatus('Preparando la galería…');
   refresh();
 })();

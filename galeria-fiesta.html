@@ -16,7 +16,7 @@
   <section class="ag-drive-stage" aria-label="Galería infinita de fotografías compartidas">
     <div class="ag-drive-canvas" id="agDriveInfiniteGallery"></div>
     <div class="ag-drive-topbar">
-      <a class="ag-stage-back" href="index.html#fotos-fiesta">‹ Volver</a>
+      <a class="ag-stage-back" href="index.html?skipEnvelope=1#inicio">‹ Volver a la invitación</a>
       <span class="ag-stage-label">ABRIL &amp; RICARDO · RECUERDOS COMPARTIDOS</span>
       <button class="ag-stage-refresh" id="agRefreshDriveGallery" type="button" aria-label="Actualizar fotografías">↻</button>
     </div>
@@ -32,7 +32,7 @@
   <div class="ag-bg-wash" aria-hidden="true"></div>
 
   <main class="ag-shell" id="agUploadSection">
-    <a class="ag-back" href="index.html#fotos-fiesta">‹ Volver a la invitación</a>
+    <a class="ag-back" href="index.html?skipEnvelope=1#inicio">‹ Volver a la invitación</a>
 
     <header class="ag-header">
       <p class="ag-eyebrow">FORMA PARTE DE NUESTROS RECUERDOS</p>
@@ -56,6 +56,7 @@
     </section>
 
     <input id="agFileInput" type="file" accept="image/jpeg,image/png,image/webp,video/mp4,video/quicktime,video/webm" hidden>
+    <input id="agCameraPhotoInput" type="file" accept="image/*" capture="user" hidden>
     <section class="ag-composer" id="agComposer" hidden>
       <div class="ag-composer-head">
         <h2 id="agComposerTitle">Comparte tu recuerdo</h2>
@@ -80,6 +81,7 @@
       <div class="ag-composer-head"><h2 id="agCameraTitle">Toma tu foto</h2><button id="agCameraClose" type="button">×</button></div>
       <div class="ag-camera-view"><video id="agCameraVideo" autoplay playsinline muted></video></div>
       <button class="ag-submit" id="agCaptureButton" type="button">CAPTURAR FOTO</button>
+      <button class="ag-camera-file-button" id="agCameraFileButton" type="button">ELEGIR DEL CELULAR</button>
       <p class="ag-status" id="agCameraStatus"></p>
     </div>
   </div>

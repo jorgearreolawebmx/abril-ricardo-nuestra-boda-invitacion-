@@ -131,6 +131,29 @@ button { -webkit-tap-highlight-color: transparent; }
   transition: opacity .3s ease;
 }
 .opening-caption p { margin: 0; white-space: nowrap; }
+
+.skip-envelope-button {
+  position: absolute;
+  z-index: 6;
+  top: max(16px, env(safe-area-inset-top));
+  right: max(14px, env(safe-area-inset-right));
+  min-height: 38px;
+  padding: 0 13px;
+  border: 1px solid rgba(126, 103, 72, .38);
+  border-radius: 24px;
+  background: rgba(250, 246, 237, .78);
+  color: #725f43;
+  font: 9px "Marcellus", Georgia, serif;
+  letter-spacing: .09em;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  backdrop-filter: blur(7px);
+}
+.skip-envelope-button:focus-visible { outline: 2px solid #947a58; outline-offset: 3px; }
+@media (max-width: 380px) {
+  .skip-envelope-button { min-height: 35px; padding: 0 10px; font-size: 8px; }
+}
+
 .opening-caption span { width: 18px; height: 1px; background: rgba(120,97,67,.58); }
 .opening-screen.is-playing .opening-caption { opacity: 0; }
 .opening-screen.is-exiting { opacity: 0; visibility: hidden; pointer-events: none; }
