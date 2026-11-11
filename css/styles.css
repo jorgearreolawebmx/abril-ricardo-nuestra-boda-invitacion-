@@ -135,9 +135,12 @@ button { -webkit-tap-highlight-color: transparent; }
 .skip-envelope-button {
   position: absolute;
   z-index: 6;
-  top: max(16px, env(safe-area-inset-top));
-  right: max(14px, env(safe-area-inset-right));
+  top: 72%;
+  left: 50%;
+  right: auto;
+  transform: translateX(-50%);
   min-height: 38px;
+  max-width: calc(100% - 28px);
   padding: 0 13px;
   border: 1px solid rgba(126, 103, 72, .38);
   border-radius: 24px;
@@ -151,7 +154,10 @@ button { -webkit-tap-highlight-color: transparent; }
 }
 .skip-envelope-button:focus-visible { outline: 2px solid #947a58; outline-offset: 3px; }
 @media (max-width: 380px) {
-  .skip-envelope-button { min-height: 35px; padding: 0 10px; font-size: 8px; }
+  .skip-envelope-button { min-height: 35px; padding: 0 10px; font-size: 8px; top: 72%; }
+}
+@media (orientation: landscape) and (max-height: 520px) {
+  .skip-envelope-button { top: 70%; min-height: 32px; font-size: 8px; }
 }
 
 .opening-caption span { width: 18px; height: 1px; background: rgba(120,97,67,.58); }

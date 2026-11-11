@@ -366,3 +366,9 @@ button,a{font:inherit}
   .ar-panel-login-card { padding:26px 18px 23px; }
   .ar-panel-private-bar { font-size:7px; }
 }
+
+.ar-album-card-actions{display:flex;align-items:center;gap:11px;flex:0 0 auto}
+.ar-album-delete{padding:0;border:0;background:transparent;color:#a45f55;font:8px "Marcellus",Georgia,serif;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.ar-album-delete:disabled{opacity:.55;cursor:wait}
+.ar-album-card-actions button{white-space:nowrap}
+@media(max-width:380px){.ar-album-card-actions{gap:8px}.ar-album-delete,.ar-album-download{font-size:7px}}

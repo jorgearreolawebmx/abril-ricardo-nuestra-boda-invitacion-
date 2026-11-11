@@ -256,17 +256,45 @@
     setupLazyThumbnails();
   }
 
-  function privateRequest(action, itemId, timeoutMs = 30000) {
+  function panelAction(action, itemId, timeoutMs = 30000) {
     return jsonpRequest({ action, id: itemId, token: panelToken }, timeoutMs).then(data => {
       if (data && data.authRequired) {
         showLogin('La sesión terminó. Vuelve a ingresar la contraseña.');
         throw new Error('La sesión terminó.');
       }
-      if (!data || !data.success || !data.dataUrl) {
-        throw new Error((data && data.message) || 'No se pudo cargar el archivo desde Drive.');
+      if (!data || !data.success) {
+        throw new Error((data && data.message) || 'No se pudo completar la operación en Drive.');
       }
+      return data;
+    });
+  }
+
+  function privateRequest(action, itemId, timeoutMs = 30000) {
+    return panelAction(action, itemId, timeoutMs).then(data => {
+      if (!data.dataUrl) throw new Error(data.message || 'No se recibió el archivo desde Drive.');
       return data.dataUrl;
     });
+  }
+
+  async function deletePhotoFromDrive(item, button) {
+    const accepted = window.confirm('¿Eliminar esta fotografía de Google Drive? Se enviará a la papelera y dejará de aparecer en la galería pública.');
+    if (!accepted) return;
+    button.disabled = true;
+    button.textContent = 'Eliminando…';
+    try {
+      const result = await panelAction('deletePhoto', item.id, 30000);
+      allItems = allItems.filter(entry => entry.id !== item.id);
+      thumbnailCache.delete(item.id);
+      mediaCache.delete(item.id);
+      updateCounters();
+      renderActiveFilter();
+      setStatus(result.message || 'Fotografía eliminada de Drive.');
+      updated.textContent = 'Última actualización: ' + new Date().toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
+    } catch (error) {
+      setStatus(error.message || 'No se pudo eliminar la fotografía.', true);
+      button.disabled = false;
+      button.textContent = 'Eliminar';
+    }
   }
 
   function requestThumbnail(item, img) {
@@ -509,6 +537,8 @@
       : 'Recuerdo de la boda';
 
     if (['photo', 'booth', 'audio', 'video'].includes(item.kind)) {
+      const actions = document.createElement('div');
+      actions.className = 'ar-album-card-actions';
       const download = document.createElement('button');
       download.type = 'button';
       download.className = 'ar-album-download';
@@ -526,7 +556,18 @@
           download.textContent = 'Descargar';
         }
       });
-      meta.append(date, download);
+      actions.appendChild(download);
+
+      if (item.kind === 'photo' || item.kind === 'booth') {
+        const remove = document.createElement('button');
+        remove.type = 'button';
+        remove.className = 'ar-album-delete';
+        remove.textContent = 'Eliminar';
+        remove.setAttribute('aria-label', 'Eliminar fotografía de Google Drive');
+        remove.addEventListener('click', () => deletePhotoFromDrive(item, remove));
+        actions.appendChild(remove);
+      }
+      meta.append(date, actions);
     } else {
       meta.append(date);
     }

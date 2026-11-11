@@ -20,3 +20,12 @@ a,button{font:inherit}
 .ag-drive-canvas.ag-drive-loading{background:#211a15 url('../assets/galeria-infinita-fondo.webp') 50% 48% / cover no-repeat}
 .ag-drive-canvas .ig-hint{left:50%;bottom:108px;transform:translateX(-50%);text-align:center}
 @media(max-width:520px){.ag-drive-stage{min-height:520px}.ag-stage-label{max-width:48%;font-size:8px;line-height:1.4}.ag-stage-back{min-height:40px;padding:0 11px;font-size:10px}.ag-stage-refresh{width:40px;min-height:40px}}
+
+/* Mientras se amplía una fotografía, se ocultan los controles de página para
+   que no se encimen con Cerrar, Anterior y Siguiente del visor. */
+.ag-drive-topbar,.ag-drive-stage-bottom{transition:opacity .18s ease,visibility .18s ease}
+.ag-drive-stage.is-viewer-open .ag-drive-topbar,
+.ag-drive-stage.is-viewer-open .ag-drive-stage-bottom{opacity:0;visibility:hidden;pointer-events:none}
+.ag-drive-stage.is-viewer-open .ig-viewer__close{top:max(14px,env(safe-area-inset-top));right:max(14px,env(safe-area-inset-right))}
+.ag-drive-stage.is-viewer-open .ig-viewer__prev,
+.ag-drive-stage.is-viewer-open .ig-viewer__next{bottom:max(16px,calc(env(safe-area-inset-bottom) + 12px))}

@@ -90,8 +90,22 @@
     setStatus('Cargando fotografías…');
     try {
       const items = await window.ARDriveGallery.listPhotos(photoLimit, force);
-      const photos = items.map(window.ARDriveGallery.toInfinitePhoto).filter(item => item.src && item.full);
-      if (photos.length) render(photos, false);
+      const photos = [];
+      let next = 0;
+      const workers = Array.from({ length: isMobile ? 2 : 3 }, async () => {
+        while (next < items.length) {
+          const index = next++;
+          try {
+            const photo = await window.ARDriveGallery.toInfinitePhoto(items[index]);
+            if (photo && photo.src) photos[index] = photo;
+          } catch (thumbnailError) {
+            console.warn('[Galería infinita] No se pudo obtener miniatura:', items[index] && items[index].id, thumbnailError);
+          }
+        }
+      });
+      await Promise.all(workers);
+      const validPhotos = photos.filter(Boolean);
+      if (validPhotos.length) render(validPhotos, false);
       else if (!instance || !showingFallback) render(fallbackPhotos, true);
       else setStatus('Estas son fotografías de muestra. Las imágenes que compartan los invitados aparecerán aquí.');
     } catch (error) {

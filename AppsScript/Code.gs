@@ -50,8 +50,17 @@ function doGet(e) {
   if (action === 'publicPhotos') {
     return jsonpResponse_(callback, listPublicGalleryPhotos_(params.limit));
   }
+  // Las miniaturas públicas se sirven desde Apps Script para evitar enlaces de Drive
+  // que algunos navegadores móviles muestran como imagen rota.
+  if (action === 'publicThumbnail') {
+    return jsonpResponse_(callback, getPublicGalleryThumbnail_(String(params.id || '')));
+  }
+  // El original se solicita únicamente al abrir una fotografía, no al entrar a la galería.
+  if (action === 'publicPhoto') {
+    return jsonpResponse_(callback, getPublicGalleryPhoto_(String(params.id || '')));
+  }
 
-  if (action === 'list' || action === 'thumbnail' || action === 'media' || action === 'checkPanel') {
+  if (action === 'list' || action === 'thumbnail' || action === 'media' || action === 'checkPanel' || action === 'deletePhoto') {
     if (!isValidPanelToken_(token)) {
       return jsonpResponse_(callback, {
         success: false,
@@ -75,6 +84,10 @@ function doGet(e) {
 
   if (action === 'checkPanel') {
     return jsonpResponse_(callback, { success: true, authenticated: true });
+  }
+
+  if (action === 'deletePhoto') {
+    return jsonpResponse_(callback, deleteGalleryPhoto_(String(params.id || '')));
   }
 
   return HtmlService.createHtmlOutput(
@@ -402,6 +415,98 @@ function isWeddingGalleryFile_(file) {
     if (allowedFolderIds[parents.next().getId()]) return true;
   }
   return false;
+}
+
+function isWeddingGalleryPhotoFile_(file) {
+  if (!file || String(file.getMimeType() || '').toLowerCase().indexOf('image/') !== 0) return false;
+  const root = DriveApp.getFolderById(AR_ROOT_FOLDER_ID);
+  const allowedFolderIds = {};
+  const folders = root.getFolders();
+  while (folders.hasNext()) {
+    const folder = folders.next();
+    if (folder.getName() === AR_FOLDERS.booth || folder.getName() === AR_FOLDERS.photo) {
+      allowedFolderIds[folder.getId()] = true;
+    }
+  }
+  const parents = file.getParents();
+  while (parents.hasNext()) {
+    if (allowedFolderIds[parents.next().getId()]) return true;
+  }
+  return false;
+}
+
+function requirePublicGalleryPhoto_(fileId) {
+  if (!/^[A-Za-z0-9_-]{10,}$/.test(fileId)) throw new Error('Identificador de fotografía no válido.');
+  const file = DriveApp.getFileById(fileId);
+  if (!isWeddingGalleryPhotoFile_(file)) throw new Error('La fotografía no pertenece a la galería de esta boda.');
+  if (file.getSharingAccess() !== DriveApp.Access.ANYONE_WITH_LINK) {
+    throw new Error('Esta fotografía no tiene permiso de visualización pública.');
+  }
+  return file;
+}
+
+function getPublicGalleryThumbnail_(fileId) {
+  try {
+    if (!/^[A-Za-z0-9_-]{10,}$/.test(fileId)) throw new Error('Identificador de fotografía no válido.');
+    const file = requirePublicGalleryPhoto_(fileId);
+    const cache = CacheService.getScriptCache();
+    const cacheKey = 'AR_PUBLIC_THUMB_' + fileId;
+    const cached = cache.get(cacheKey);
+    if (cached) {
+      try { return JSON.parse(cached); } catch (cacheError) { cache.remove(cacheKey); }
+    }
+    const thumbnail = file.getThumbnail();
+    if (!thumbnail) throw new Error('Drive todavía no ha generado la miniatura de esta fotografía.');
+    const mime = thumbnail.getContentType() || 'image/jpeg';
+    const result = {
+      success: true,
+      fileId: fileId,
+      mimeType: mime,
+      dataUrl: 'data:' + mime + ';base64,' + Utilities.base64Encode(thumbnail.getBytes())
+    };
+    // Apps Script limita el tamaño de cada elemento de caché; si la miniatura es grande,
+    // se entrega normalmente sin cachearla.
+    try { cache.put(cacheKey, JSON.stringify(result), 600); } catch (cacheError) { /* continúa sin caché */ }
+    return result;
+  } catch (error) {
+    return { success: false, fileId: fileId, message: error && error.message ? error.message : 'No se pudo generar la miniatura pública.' };
+  }
+}
+
+function getPublicGalleryPhoto_(fileId) {
+  try {
+    const file = requirePublicGalleryPhoto_(fileId);
+    const blob = file.getBlob();
+    const bytes = blob.getBytes();
+    if (bytes.length > AR_MAX_INLINE_IMAGE_BYTES) {
+      throw new Error('El original supera 12 MB. Puedes ver la miniatura, pero el original no se puede abrir integrado.');
+    }
+    const mime = blob.getContentType() || file.getMimeType() || 'image/jpeg';
+    return {
+      success: true,
+      fileId: fileId,
+      mimeType: mime,
+      fileName: file.getName(),
+      dataUrl: 'data:' + mime + ';base64,' + Utilities.base64Encode(bytes)
+    };
+  } catch (error) {
+    return { success: false, fileId: fileId, message: error && error.message ? error.message : 'No se pudo abrir el original.' };
+  }
+}
+
+function deleteGalleryPhoto_(fileId) {
+  try {
+    if (!/^[A-Za-z0-9_-]{10,}$/.test(fileId)) throw new Error('Identificador de fotografía no válido.');
+    const file = DriveApp.getFileById(fileId);
+    if (!isWeddingGalleryPhotoFile_(file)) throw new Error('Solo puedes eliminar fotografías de las carpetas de fotos de esta boda.');
+    const name = file.getName();
+    file.setTrashed(true); // Se envía a la papelera de Drive; todavía puede recuperarse desde allí.
+    CacheService.getScriptCache().remove('AR_PUBLIC_THUMB_' + fileId);
+    clearPublicGalleryCache_();
+    return { success: true, fileId: fileId, fileName: name, message: 'La fotografía se envió a la papelera de Google Drive.' };
+  } catch (error) {
+    return { success: false, fileId: fileId, message: error && error.message ? error.message : 'No se pudo eliminar la fotografía.' };
+  }
 }
 
 function getGalleryThumbnail_(fileId) {

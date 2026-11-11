@@ -616,7 +616,16 @@
       im.className = 'ig-viewer__img';
       im.alt = ph.alt || '';
       im.draggable = false;
-      im.src = ph.full;
+      im.src = ph.full || ph.src;
+      // Para fotos de Drive, la miniatura abre primero y el original llega en segundo plano.
+      if (typeof ph.loadFull === 'function') {
+        var targetImage = im;
+        Promise.resolve().then(function () { return ph.loadFull(); }).then(function (fullDataUrl) {
+          if (fullDataUrl && viewer.open && viewer.img === targetImage) targetImage.src = fullDataUrl;
+        }).catch(function (error) {
+          if (global.console) console.warn('[InfiniteGallery] se conserva la miniatura:', error);
+        });
+      }
       var fr = fitRect(ph);
       im.style.width = fr.w + 'px'; im.style.height = fr.h + 'px';
       im.style.transform = tf(fr.x, fr.y, 1, 1);
@@ -647,6 +656,8 @@
       hiddenId = fromRect ? fromRect.it.id : null;
       forceRender = true;
       vRoot.classList.add('is-open');
+      var driveStage = container.closest ? container.closest('.ag-drive-stage') : null;
+      if (driveStage) driveStage.classList.add('is-viewer-open');
       vRoot.setAttribute('aria-hidden', 'false');
       updateCount();
       var im = makeViewerImg(ph);
@@ -728,6 +739,8 @@
         viewer.open = false; viewer.busy = false; viewer.img = null;
         hiddenId = null; forceRender = true;
         vRoot.classList.remove('is-open');
+        var driveStage = container.closest ? container.closest('.ag-drive-stage') : null;
+        if (driveStage) driveStage.classList.remove('is-viewer-open');
         vRoot.setAttribute('aria-hidden', 'true');
         while (vStage.firstChild) { vStage.removeChild(vStage.firstChild); }
         [vScrim, bClose, bPrev, bNext, vCount].forEach(function (n) { n.getAnimations().forEach(function (x) { x.cancel(); }); });
@@ -828,7 +841,7 @@
         im.onload = function () {
           try {
             results[index] = {
-              src: p.src, full: p.full || p.src, alt: p.alt || '',
+              src: p.src, full: p.full || p.src, loadFull: typeof p.loadFull === 'function' ? p.loadFull : null, alt: p.alt || '',
               scale: p.scale || 1,
               ar: im.naturalWidth / im.naturalHeight,
               mips: buildMips(im, cfg.maxTextureSize)
