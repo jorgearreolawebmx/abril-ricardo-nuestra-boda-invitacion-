@@ -10,6 +10,11 @@
  * para que los invitados puedan verlo y descargarlo desde la galería.
  */
 const AR_ROOT_FOLDER_ID = '1P0JIDSpjX2x55Roy_0xc4y-QL-GHp9f0';
+// La contraseña se guarda en Script Properties de Apps Script, nunca en GitHub ni en JavaScript público.
+const AR_PANEL_SESSION_SECONDS = 21600; // 6 horas
+const AR_MAX_INLINE_AUDIO_BYTES = 10 * 1024 * 1024;
+const AR_MAX_INLINE_IMAGE_BYTES = 12 * 1024 * 1024;
+const AR_MAX_INLINE_VIDEO_BYTES = 18 * 1024 * 1024;
 
 const AR_FOLDERS = {
   booth: 'FOTOS_CON_LOGO',
@@ -22,8 +27,8 @@ const AR_FOLDERS = {
 const AR_LIMITS = {
   booth: 12 * 1024 * 1024,
   photo: 12 * 1024 * 1024,
-  video: 20 * 1024 * 1024,
-  audio: 12 * 1024 * 1024,
+  video: 18 * 1024 * 1024,
+  audio: 10 * 1024 * 1024,
   message: 30 * 1024
 };
 
@@ -37,34 +42,115 @@ const AR_ALLOWED_TYPES = [
 function doGet(e) {
   const params = (e && e.parameter) ? e.parameter : {};
   const callback = String(params.callback || '');
+  const action = String(params.action || '');
+  const token = String(params.token || '');
 
-  if (params.action === 'thumbnail') {
-    const result = getGalleryThumbnail_(String(params.id || ''));
-    if (!/^[A-Za-z_$][A-Za-z0-9_$\\.]*$/.test(callback)) {
-      return ContentService.createTextOutput(JSON.stringify(result))
-        .setMimeType(ContentService.MimeType.JSON);
+  if (action === 'list' || action === 'thumbnail' || action === 'media' || action === 'checkPanel') {
+    if (!isValidPanelToken_(token)) {
+      return jsonpResponse_(callback, {
+        success: false,
+        authRequired: true,
+        message: 'Inicia sesión en el panel privado de los novios.'
+      });
     }
-    return ContentService.createTextOutput(callback + '(' + JSON.stringify(result) + ');')
-      .setMimeType(ContentService.MimeType.JAVASCRIPT);
   }
 
-  if (params.action === 'list') {
-    const data = listSharedGallery_();
-    if (!/^[A-Za-z_$][A-Za-z0-9_$\\.]*$/.test(callback)) {
-      return ContentService.createTextOutput(JSON.stringify(data))
-        .setMimeType(ContentService.MimeType.JSON);
-    }
-    return ContentService.createTextOutput(callback + '(' + JSON.stringify(data) + ');')
-      .setMimeType(ContentService.MimeType.JAVASCRIPT);
+  if (action === 'list') {
+    return jsonpResponse_(callback, listSharedGallery_());
+  }
+
+  if (action === 'thumbnail') {
+    return jsonpResponse_(callback, getGalleryThumbnail_(String(params.id || '')));
+  }
+
+  if (action === 'media') {
+    return jsonpResponse_(callback, getGalleryMedia_(String(params.id || '')));
+  }
+
+  if (action === 'checkPanel') {
+    return jsonpResponse_(callback, { success: true, authenticated: true });
   }
 
   return HtmlService.createHtmlOutput(
     '<!doctype html><html lang="es"><meta charset="utf-8"><body style="font:16px Arial;padding:24px;color:#514936">' +
-    '<h2>Álbum de Abril & Ricardo</h2><p>El servicio está activo. Puedes regresar a la invitación.</p></body></html>'
+    '<h2>Servicio privado de Abril & Ricardo</h2><p>El servicio está activo.</p></body></html>'
   );
 }
 
+function jsonpResponse_(callback, data) {
+  const safeCallback = /^[A-Za-z_$][A-Za-z0-9_$\\.]*$/.test(callback);
+  if (!safeCallback) {
+    return ContentService.createTextOutput(JSON.stringify(data))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+  return ContentService.createTextOutput(callback + '(' + JSON.stringify(data).replace(/</g, '\\u003c') + ');')
+    .setMimeType(ContentService.MimeType.JAVASCRIPT);
+}
+
+function isValidPanelToken_(token) {
+  if (!token || token.length < 20) return false;
+  return CacheService.getScriptCache().get('AR_PANEL_' + token) === 'authorized';
+}
+
+function createPanelSession_() {
+  const token = Utilities.getUuid().replace(/-/g, '') + Utilities.getUuid().replace(/-/g, '');
+  CacheService.getScriptCache().put('AR_PANEL_' + token, 'authorized', AR_PANEL_SESSION_SECONDS);
+  return token;
+}
+
+function setFilePrivate_(file) {
+  try {
+    if (file.getSharingAccess() !== DriveApp.Access.PRIVATE) {
+      file.setSharing(DriveApp.Access.PRIVATE, DriveApp.Permission.VIEW);
+    }
+    return file.getSharingAccess() === DriveApp.Access.PRIVATE;
+  } catch (error) {
+    return false;
+  }
+}
+
+function panelAuthResponse_(result) {
+  const safeResult = JSON.stringify(result).replace(/</g, '\\u003c');
+  const html = '<!doctype html><html lang="es"><meta charset="utf-8"><body>' +
+    '<script>window.top.postMessage(' + safeResult + ', "*");</script>' +
+    '<p>Autenticación terminada.</p></body></html>';
+  return HtmlService.createHtmlOutput(html)
+    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+}
+
 function doPost(e) {
+  const params = (e && e.parameter) ? e.parameter : {};
+
+  if (String(params.action || '') === 'panelLogin') {
+    const requestId = String(params.requestId || '');
+    const password = String(params.password || '');
+    const expectedPassword = PropertiesService.getScriptProperties().getProperty('AR_PANEL_PASSWORD') || '';
+    if (!expectedPassword) {
+      return panelAuthResponse_({
+        type: 'AR_PANEL_AUTH_RESULT',
+        requestId: requestId,
+        success: false,
+        message: 'El panel aún no está configurado. Registra AR_PANEL_PASSWORD en las propiedades del proyecto Apps Script.'
+      });
+    }
+    if (password !== expectedPassword) {
+      return panelAuthResponse_({
+        type: 'AR_PANEL_AUTH_RESULT',
+        requestId: requestId,
+        success: false,
+        message: 'La contraseña no es correcta.'
+      });
+    }
+
+    return panelAuthResponse_({
+      type: 'AR_PANEL_AUTH_RESULT',
+      requestId: requestId,
+      success: true,
+      token: createPanelSession_(),
+      expiresIn: AR_PANEL_SESSION_SECONDS
+    });
+  }
+
   let result = {
     type: 'AR_PHOTO_UPLOAD_RESULT',
     success: false,
@@ -119,7 +205,7 @@ function doPost(e) {
       file.setDescription('Compartido en la boda de Abril & Ricardo · 5 de agosto de 2027.');
     }
 
-    const publicLinkEnabled = ensurePublicLink_(file);
+    const privateStorage = setFilePrivate_(file);
 
     result = {
       type: 'AR_PHOTO_UPLOAD_RESULT',
@@ -130,10 +216,10 @@ function doPost(e) {
       fileId: file.getId(),
       fileName: file.getName(),
       fileUrl: file.getUrl(),
-      publicLinkEnabled: publicLinkEnabled
+      privateStorage: privateStorage
     };
-    if (!publicLinkEnabled) {
-      result.message = 'El archivo se guardó, pero Drive no permitió activar el acceso por enlace. Revisa los permisos de uso compartido.';
+    if (!privateStorage) {
+      result.message = 'El archivo se guardó, pero no fue posible confirmar que quedara privado. Revisa los permisos de Drive.';
     }
   } catch (error) {
     result.message = (error && error.message) ? error.message : 'Ocurrió un error al guardar el archivo.';
@@ -154,18 +240,6 @@ function getOrCreateFolder_(name) {
   return folders.hasNext() ? folders.next() : root.createFolder(name);
 }
 
-function ensurePublicLink_(file) {
-  try {
-    let access = file.getSharingAccess();
-    if (access !== DriveApp.Access.ANYONE_WITH_LINK) {
-      file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
-      access = file.getSharingAccess();
-    }
-    return access === DriveApp.Access.ANYONE_WITH_LINK;
-  } catch (error) {
-    return false;
-  }
-}
 
 function listSharedGallery_() {
   const items = [];
@@ -179,14 +253,8 @@ function listSharedGallery_() {
       const file = files.next();
       const id = file.getId();
       const mime = file.getMimeType();
-      const isPublic = ensurePublicLink_(file);
-      const resourceKey = file.getResourceKey();
-      const resourceParam = resourceKey ? '&resourcekey=' + encodeURIComponent(resourceKey) : '';
-      const viewUrl = 'https://drive.google.com/file/d/' + id + '/view?usp=sharing' +
-        (resourceKey ? '&resourcekey=' + encodeURIComponent(resourceKey) : '');
-      const previewUrl = 'https://drive.google.com/file/d/' + id + '/preview' +
-        (resourceKey ? '?resourcekey=' + encodeURIComponent(resourceKey) : '');
-      const downloadUrl = file.getDownloadUrl();
+      // Revoca el acceso público por enlace de los archivos del álbum.
+      const privateStorage = setFilePrivate_(file);
 
       let description = file.getDescription() || '';
       let senderName = '';
@@ -209,13 +277,8 @@ function listSharedGallery_() {
         description: description,
         senderName: senderName,
         createdAt: file.getDateCreated().toISOString(),
-        publicLinkEnabled: isPublic,
-        thumbnailAction: 'thumbnail',
-        previewUrl: previewUrl,
-        viewUrl: viewUrl,
-        fullImageUrl: 'https://drive.google.com/uc?export=view&id=' + id + resourceParam,
-        audioUrl: (kind === 'audio') ? downloadUrl : '',
-        downloadUrl: downloadUrl
+        privateStorage: privateStorage,
+        downloadAvailable: true
       });
     }
   });
@@ -226,7 +289,6 @@ function listSharedGallery_() {
 
   return { success: true, items: items.slice(0, 200) };
 }
-
 
 function isWeddingGalleryFile_(file) {
   const root = DriveApp.getFolderById(AR_ROOT_FOLDER_ID);
@@ -250,49 +312,70 @@ function isWeddingGalleryFile_(file) {
 }
 
 function getGalleryThumbnail_(fileId) {
-  const result = {
-    success: false,
-    fileId: fileId,
-    message: 'No se pudo generar la miniatura.'
-  };
-
   try {
-    if (!/^[A-Za-z0-9_-]{10,}$/.test(fileId)) {
-      throw new Error('Identificador de archivo no válido.');
-    }
+    if (!/^[A-Za-z0-9_-]{10,}$/.test(fileId)) throw new Error('Identificador de archivo no válido.');
 
     const file = DriveApp.getFileById(fileId);
-    if (!isWeddingGalleryFile_(file)) {
-      throw new Error('El archivo no pertenece al álbum de la boda.');
-    }
-    const mime = file.getMimeType();
-    if (mime.indexOf('image/') !== 0) {
-      throw new Error('El archivo no es una fotografía.');
-    }
-    if (!ensurePublicLink_(file)) {
-      throw new Error('La fotografía no tiene acceso público de lectura.');
-    }
+    if (!isWeddingGalleryFile_(file)) throw new Error('El archivo no pertenece al álbum de la boda.');
+    if (file.getMimeType().indexOf('image/') !== 0) throw new Error('El archivo no es una fotografía.');
 
-    // Drive genera una miniatura ligera; no se descarga la fotografía original
-    // para construir las tarjetas del álbum.
     const thumbnail = file.getThumbnail();
-    if (!thumbnail) {
-      throw new Error('Google Drive todavía no generó una miniatura para esta fotografía.');
-    }
+    if (!thumbnail) throw new Error('Google Drive todavía no generó una miniatura para esta fotografía.');
 
     const contentType = thumbnail.getContentType() || 'image/jpeg';
-    const base64 = Utilities.base64Encode(thumbnail.getBytes());
     return {
       success: true,
       fileId: fileId,
       mimeType: contentType,
-      dataUrl: 'data:' + contentType + ';base64,' + base64
+      dataUrl: 'data:' + contentType + ';base64,' + Utilities.base64Encode(thumbnail.getBytes())
     };
   } catch (error) {
-    result.message = (error && error.message) ? error.message : 'No se pudo generar la miniatura.';
+    return {
+      success: false,
+      fileId: fileId,
+      message: error && error.message ? error.message : 'No se pudo generar la miniatura.'
+    };
   }
+}
 
-  return result;
+function getGalleryMedia_(fileId) {
+  try {
+    if (!/^[A-Za-z0-9_-]{10,}$/.test(fileId)) throw new Error('Identificador de archivo no válido.');
+
+    const file = DriveApp.getFileById(fileId);
+    if (!isWeddingGalleryFile_(file)) throw new Error('El archivo no pertenece al álbum de la boda.');
+
+    const mime = file.getMimeType();
+    const isImage = mime.indexOf('image/') === 0;
+    const isAudio = mime.indexOf('audio/') === 0;
+    const isVideo = mime.indexOf('video/') === 0;
+    if (!isImage && !isAudio && !isVideo) {
+      throw new Error('Este tipo de archivo no se puede reproducir en el panel.');
+    }
+
+    const blob = file.getBlob();
+    const bytes = blob.getBytes();
+    const limit = isAudio ? AR_MAX_INLINE_AUDIO_BYTES : (isVideo ? AR_MAX_INLINE_VIDEO_BYTES : AR_MAX_INLINE_IMAGE_BYTES);
+    if (bytes.length > limit) {
+      throw new Error(isAudio
+        ? 'El saludo supera 10 MB y no se puede reproducir integrado.'
+        : (isVideo ? 'El video supera 18 MB para reproducción integrada.' : 'La fotografía supera 12 MB para vista ampliada.'));
+    }
+
+    return {
+      success: true,
+      fileId: fileId,
+      mimeType: mime,
+      fileName: file.getName(),
+      dataUrl: 'data:' + mime + ';base64,' + Utilities.base64Encode(bytes)
+    };
+  } catch (error) {
+    return {
+      success: false,
+      fileId: fileId,
+      message: error && error.message ? error.message : 'No se pudo cargar el archivo.'
+    };
+  }
 }
 
 function sanitizeFileName_(name) {

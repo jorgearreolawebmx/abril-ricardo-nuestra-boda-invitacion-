@@ -2321,3 +2321,22 @@ body.ar-camera-open { overflow:hidden; }
   box-shadow:0 9px 20px rgba(80,55,34,.22);font:600 12px "Marcellus",Georgia,serif;letter-spacing:.08em;text-decoration:none;
 }
 .shared-gallery-enter:active {transform:translateY(1px);}
+
+
+/* Acceso discreto al panel privado, colocado al final de la invitación */
+.couple-panel-entry {
+  display:flex;
+  justify-content:center;
+  padding:15px 14px 24px;
+  background:rgba(247,239,225,.68);
+}
+.couple-panel-entry a {
+  color:rgba(113,94,66,.68);
+  font:8px "Marcellus",Georgia,serif;
+  letter-spacing:.16em;
+  text-decoration:none;
+  border-bottom:1px solid rgba(143,119,83,.28);
+  padding:4px 2px 5px;
+  transition:color .2s ease,border-color .2s ease;
+}
+.couple-panel-entry a:hover { color:#6c573c;border-color:#8b7653; }

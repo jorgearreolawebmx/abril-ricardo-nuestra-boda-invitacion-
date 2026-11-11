@@ -177,7 +177,7 @@ ACTUALIZACIÓN V22 — MINIATURAS Y SALUDOS IDENTIFICADOS
 ACTUALIZACIÓN V23 — PANEL PRIVADO DE LOS NOVIOS
 - Se agregó al final de index.html un acceso discreto “PANEL DE LOS NOVIOS”.
 - album-recuerdos.html ahora muestra un inicio de sesión y oculta el dashboard hasta autenticación correcta.
-- La contraseña `abril12345` se valida en Apps Script y no se publica en los archivos JS/HTML.
+- La contraseña `la contraseña privada acordada con los novios` se valida en Apps Script y no se publica en los archivos JS/HTML.
 - El servidor genera un token de sesión de 6 horas; list, thumbnail y media requieren ese token.
 - Los archivos nuevos se guardan privados; al listar el álbum, el backend intenta retirar el acceso público por enlace de los archivos existentes.
 - El panel muestra fotos con miniaturas, visor propio y descarga; no manda al visitante a una ventana de Drive.
@@ -188,3 +188,18 @@ ACTUALIZACIÓN V23 — PANEL PRIVADO DE LOS NOVIOS
 - Para activar todo, reemplazar AppsScript/Code.gs y publicar una nueva versión de la implementación web ya existente. La URL /exec se conserva.
 
 - La contraseña del panel se debe registrar en Apps Script > Configuración del proyecto > Propiedades del script, como AR_PANEL_PASSWORD. No se guarda en los archivos públicos de GitHub.
+
+
+ACTUALIZACIÓN V25 — ESTRUCTURA LIMPIA Y PANEL PRIVADO
+- Se usa como base la estructura original del proyecto.
+- Se conservaron todos los recursos multimedia dentro de assets/ y se eliminaron las 65 copias idénticas que estaban en la raíz.
+- Se sincronizaron los archivos del panel privado con las rutas reales que carga album-recuerdos.html:
+  - js/album-recuerdos.js
+  - css/album-recuerdos.css
+  - AppsScript/Code.gs
+- También se sincronizaron las versiones actuales de photo-booth, shared-gallery y styles con sus carpetas canónicas.
+- Se retiraron de la raíz las copias redundantes de scripts, estilos y documentación.
+- Se mantuvieron index.html, galeria-fiesta.html y album-recuerdos.html en la raíz.
+- La URL actual de Apps Script permanece configurada.
+- La contraseña del panel se mantiene fuera de los archivos públicos y se configura como Script Property AR_PANEL_PASSWORD.
+- El paquete final queda por debajo de 100 archivos.

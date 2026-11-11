@@ -7,12 +7,9 @@
   const composerBody = $('agComposerBody');
   const composerStatus = $('agComposerStatus');
   const fileInput = $('agFileInput');
-  const gallery = $('agGallery');
   const cameraModal = $('agCameraModal');
   const cameraVideo = $('agCameraVideo');
   const cameraStatus = $('agCameraStatus');
-  const lightbox = $('agLightbox');
-  const lightboxContent = $('agLightboxContent');
 
   let pendingBlob = null;
   let pendingName = '';
@@ -98,9 +95,9 @@
       alert('Selecciona una fotografía o un video compatible.');
       return;
     }
-    const max = isImage ? 15 * 1024 * 1024 : 20 * 1024 * 1024;
+    const max = isImage ? 12 * 1024 * 1024 : 18 * 1024 * 1024;
     if (file.size > max) {
-      alert(isImage ? 'La fotografía debe pesar menos de 15 MB.' : 'El video debe pesar menos de 20 MB.');
+      alert(isImage ? 'La fotografía debe pesar menos de 12 MB.' : 'El video debe pesar menos de 18 MB.');
       return;
     }
     makeUploadPanel(file, file.name, file.type, isImage ? 'photo' : 'video');
@@ -292,6 +289,10 @@
         nameInput.focus();
         return;
       }
+      if (recordedBlob.size > 10 * 1024 * 1024) {
+        status('El saludo supera 10 MB. Graba un mensaje más corto para poder reproducirlo dentro del panel privado.', true);
+        return;
+      }
       const type = recordedBlob.type || 'audio/webm';
       const ext = type.includes('mp4') ? 'm4a' : 'webm';
       makeUploadPanel(recordedBlob, 'Saludo_' + Date.now() + '.' + ext, type, 'audio', senderName);
@@ -335,8 +336,10 @@
 
   async function uploadPending(button, messageText = '') {
     if (!pendingBlob) return;
-    if (pendingBlob.size > 20 * 1024 * 1024) {
-      status('El archivo supera el límite de 20 MB.', true); return;
+    const uploadLimit = pendingKind === 'audio' ? 10 * 1024 * 1024
+      : (pendingKind === 'video' ? 18 * 1024 * 1024 : (pendingKind === 'photo' ? 12 * 1024 * 1024 : 20 * 1024 * 1024));
+    if (pendingBlob.size > uploadLimit) {
+      status('El archivo supera el límite permitido para este tipo de recuerdo.', true); return;
     }
     button.disabled = true; button.textContent = 'ENVIANDO…';
     status('Estamos guardando tu recuerdo en Google Drive…');
@@ -356,13 +359,13 @@
         messageText: messageText,
         senderName: pendingSenderName
       });
-      if (result.publicLinkEnabled === false) {
-        status('El archivo se guardó, pero Google no permitió habilitar el enlace público. Revisa los permisos de Drive.', true);
+      if (result.privateStorage === false) {
+        status('El archivo se guardó, pero no se pudo confirmar que quedara privado. Revisa los permisos de Drive.', true);
         button.disabled = false;
         button.textContent = 'REVISAR PERMISOS';
         return;
       }
-      status('¡Gracias! Tu recuerdo se guardó en el álbum y ya puede verse desde la galería.');
+      status('¡Gracias! Tu recuerdo se guardó en el álbum privado de Abril & Ricardo.');
       button.textContent = 'COMPARTIDO';
       await loadGallery();
     } catch (err) {
@@ -373,100 +376,14 @@
   }
 
   function loadGallery() {
-    if (!endpoint) {
-      $('agLastUpdated').textContent = 'La galería estará disponible cuando se conecte Google Drive.';
-      return;
+    const note = $('agPrivateNoteStatus');
+    if (note) {
+      note.textContent = 'Tu recuerdo está guardado para que Abril & Ricardo lo vean en su panel privado.';
     }
-    const callback = 'ARGalleryCallback_' + Date.now() + '_' + Math.floor(Math.random() * 10000);
-    const script = document.createElement('script');
-    window[callback] = data => {
-      delete window[callback];
-      script.remove();
-      if (!data || !data.success) {
-        $('agLastUpdated').textContent = 'No se pudo actualizar la galería. Intenta de nuevo.';
-        return;
-      }
-      renderGallery(data.items || []);
-      $('agLastUpdated').textContent = 'Actualizada: ' + new Date().toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
-    };
-    script.onerror = () => {
-      delete window[callback]; script.remove();
-      $('agLastUpdated').textContent = 'No se pudo conectar con Google Drive.';
-    };
-    script.src = endpoint + '?action=list&callback=' + encodeURIComponent(callback) + '&_=' + Date.now();
-    document.body.appendChild(script);
   }
 
-  function renderGallery(items) {
-    gallery.replaceChildren();
-    if (!items.length) {
-      const empty = document.createElement('div');
-      empty.className = 'ag-empty';
-      const icon = document.createElement('span'); icon.textContent = '♡';
-      const p = document.createElement('p'); p.textContent = 'Todavía no hay fotos.';
-      const strong = document.createElement('strong'); strong.textContent = 'Sube la primera.';
-      empty.append(icon, p, strong); gallery.appendChild(empty); return;
-    }
-    items.forEach(item => {
-      const card = document.createElement('article'); card.className = 'ag-card';
-      if (item.kind === 'message') {
-        const quote = document.createElement('div'); quote.className = 'ag-card-message';
-        quote.textContent = item.description || 'Un mensaje para los novios';
-        card.appendChild(quote);
-      } else if (item.kind === 'video') {
-        const video = document.createElement('iframe');
-        video.src = item.previewUrl; video.allow = 'autoplay; encrypted-media'; video.allowFullscreen = true;
-        video.title = 'Video compartido por un invitado';
-        card.appendChild(video);
-      } else if (item.kind === 'audio') {
-        const wrap = document.createElement('div'); wrap.className = 'ag-card-message';
-        const audio = document.createElement('audio'); audio.controls = true; audio.src = item.downloadUrl;
-        wrap.appendChild(audio); card.appendChild(wrap);
-      } else {
-        if (item.publicLinkEnabled === false) {
-          const locked = document.createElement('div');
-          locked.className = 'ag-card-message';
-          locked.textContent = 'Este recuerdo se guardó en Drive, pero no tiene acceso público habilitado.';
-          card.appendChild(locked);
-        } else {
-          const img = document.createElement('img'); img.className = 'ag-card-media';
-          img.loading = 'lazy'; img.src = item.previewUrl; img.alt = 'Fotografía compartida en la boda';
-          img.addEventListener('click', () => openLightbox('image', item.previewUrl));
-          img.addEventListener('error', () => {
-            const fallback = document.createElement('div');
-            fallback.className = 'ag-card-message';
-            const message = document.createElement('span');
-            message.textContent = 'No se pudo mostrar la miniatura.';
-            const link = document.createElement('a');
-            link.href = item.viewUrl || item.downloadUrl; link.target = '_blank'; link.rel = 'noopener';
-            link.textContent = 'Abrir en Google Drive';
-            fallback.append(message, link); img.replaceWith(fallback);
-          }, { once: true });
-          card.appendChild(img);
-        }
-      }
-      const meta = document.createElement('div'); meta.className = 'ag-card-meta';
-      const date = document.createElement('span');
-      date.textContent = item.createdAt ? new Date(item.createdAt).toLocaleDateString('es-MX') : 'Recuerdo de la boda';
-      const download = document.createElement('a'); download.href = item.downloadUrl; download.target = '_blank';
-      download.rel = 'noopener'; download.textContent = 'Descargar';
-      meta.append(date, download); card.appendChild(meta); gallery.appendChild(card);
-    });
-  }
 
-  function openLightbox(type, url) {
-    lightboxContent.replaceChildren();
-    const media = type === 'video' ? document.createElement('video') : document.createElement('img');
-    media.src = url; if (type === 'video') media.controls = true;
-    lightboxContent.appendChild(media); lightbox.hidden = false;
-  }
-  $('agLightboxClose').addEventListener('click', () => { lightbox.hidden = true; lightboxContent.replaceChildren(); });
-  lightbox.addEventListener('click', e => { if (e.target === lightbox) lightbox.hidden = true; });
   $('agComposerClose').addEventListener('click', () => { composer.hidden = true; composerBody.replaceChildren(); pendingBlob = null; });
-  $('agRefresh').addEventListener('click', loadGallery);
-  document.addEventListener('visibilitychange', () => { if (!document.hidden) loadGallery(); });
-
   loadGallery();
-  refreshTimer = setInterval(loadGallery, 20000);
-  window.addEventListener('beforeunload', () => { clearInterval(refreshTimer); stopCamera(); });
+  window.addEventListener('beforeunload', () => stopCamera());
 })();

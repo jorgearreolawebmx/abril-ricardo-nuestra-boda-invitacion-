@@ -106,3 +106,18 @@ button,a{font:inherit}
 }
 .ag-audio-controls { flex-wrap:wrap; }
 .ag-audio-controls button { font:10px "Marcellus",Georgia,serif; letter-spacing:.06em; }
+
+
+.ag-private-note {
+  margin:5px 0 0;
+  padding:22px 18px;
+  border:1px solid rgba(255,255,255,.86);
+  border-radius:20px;
+  background:rgba(255,251,244,.82);
+  box-shadow:0 8px 20px rgba(77,57,37,.09);
+  text-align:center;
+}
+.ag-private-note h2 { margin:0 0 8px;color:#65533f;font:29px/1.05 "Cormorant Garamond",Georgia,serif;font-weight:500; }
+.ag-private-note>p:not(.ag-eyebrow) { margin:0 auto;max-width:330px;color:#82725a;font:16px/1.4 "Cormorant Garamond",Georgia,serif; }
+.ag-private-note>span { display:block;margin:12px 0 0;color:#9b805d;font:italic 14px "Cormorant Garamond",Georgia,serif; }
+.ag-private-note-status { margin:10px 0 0;color:#7d785b;font:10px "Marcellus",Georgia,serif; }

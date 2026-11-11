@@ -198,3 +198,171 @@ button,a{font:inherit}
   white-space:nowrap;
 }
 .ar-album-lightbox { flex-direction:column; gap:12px; }
+
+
+/* Acceso privado para Abril y Ricardo */
+[hidden] { display:none !important; }
+.ar-panel-login-shell {
+  width:min(100%,520px);
+  min-height:100svh;
+  margin:0 auto;
+  padding:20px 18px;
+  display:flex;
+  flex-direction:column;
+}
+.ar-panel-login-card {
+  width:100%;
+  max-width:390px;
+  margin:auto;
+  padding:30px 24px 27px;
+  border:1px solid rgba(255,255,255,.9);
+  border-radius:25px;
+  background:rgba(255,251,244,.91);
+  box-shadow:0 18px 44px rgba(77,57,36,.14);
+  text-align:center;
+  backdrop-filter:blur(12px);
+}
+.ar-panel-login-card h1 {
+  margin:0;
+  color:#66513c;
+  font:clamp(38px,10vw,49px)/1.05 "Cormorant Garamond",Georgia,serif;
+  font-weight:500;
+}
+.ar-panel-login-card h1 span { color:#a68b63;font-style:italic; }
+.ar-panel-login-intro {
+  margin:8px 0 0;
+  color:#88775e;
+  font:italic 18px "Cormorant Garamond",Georgia,serif;
+}
+.ar-panel-lock {
+  display:grid;
+  place-items:center;
+  width:55px;
+  height:55px;
+  margin:23px auto;
+  border:1px solid rgba(160,136,98,.3);
+  border-radius:50%;
+  background:linear-gradient(145deg,#fffdf8,#eee3d2);
+  color:#917756;
+  font-size:27px;
+  box-shadow:0 6px 15px rgba(80,61,39,.09);
+}
+#arPanelLoginForm { display:flex;flex-direction:column;gap:10px;text-align:left; }
+#arPanelLoginForm label {
+  color:#806b4d;
+  font:10px "Marcellus",Georgia,serif;
+  letter-spacing:.12em;
+}
+#arPanelPassword {
+  width:100%;
+  min-height:49px;
+  padding:12px 14px;
+  border:1px solid rgba(145,122,87,.3);
+  border-radius:12px;
+  outline:none;
+  background:#fffefa;
+  color:#5b4b37;
+  font:16px "Cormorant Garamond",Georgia,serif;
+}
+#arPanelPassword:focus { border-color:#907a57;box-shadow:0 0 0 3px rgba(144,122,87,.12); }
+.ar-panel-login-button {
+  width:100%;
+  min-height:49px;
+  margin-top:5px;
+  border:0;
+  border-radius:28px;
+  background:#766247;
+  color:#fffaf2;
+  font:600 10px "Marcellus",Georgia,serif;
+  letter-spacing:.13em;
+  cursor:pointer;
+}
+.ar-panel-login-button:disabled { opacity:.65;cursor:wait; }
+.ar-panel-login-status {
+  min-height:20px;
+  margin:12px 0 0;
+  color:#8b785e;
+  font:14px "Cormorant Garamond",Georgia,serif;
+}
+.ar-panel-login-status.is-error { color:#a74f42; }
+.ar-panel-private-bar {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  margin:14px 0 0;
+  padding:10px 12px;
+  border:1px solid rgba(255,255,255,.8);
+  border-radius:13px;
+  background:rgba(255,251,244,.64);
+  color:#8d785a;
+  font:8px "Marcellus",Georgia,serif;
+  letter-spacing:.12em;
+}
+.ar-panel-private-bar span { display:flex;align-items:center;gap:7px; }
+.ar-panel-private-bar i { width:7px;height:7px;border-radius:50%;background:#7c805c;box-shadow:0 0 0 3px rgba(124,128,92,.12); }
+.ar-panel-private-bar button {
+  padding:6px 9px;
+  border:1px solid rgba(143,119,83,.25);
+  border-radius:16px;
+  background:rgba(255,255,255,.65);
+  color:#806a4d;
+  font:8px "Marcellus",Georgia,serif;
+  cursor:pointer;
+}
+.ar-album-toolbar-actions { display:flex;align-items:center;gap:8px; }
+
+/* Reproductor embebido: el audio se reproduce en esta misma tarjeta, sin iframe de Drive. */
+.ar-audio-card {
+  min-height:136px;
+  background:transparent;
+  border:0;
+  box-shadow:none;
+}
+.ar-audio-player {
+  border:1px solid rgba(255,255,255,.8);
+  background:linear-gradient(135deg,#e7ebd4,#f2f0df);
+}
+.ar-audio-play { flex:0 0 36px;width:36px;height:36px; }
+.ar-audio-wave { touch-action:pan-y; }
+.ar-audio-card audio { display:none !important; }
+.ar-audio-card.has-audio-error .ar-audio-time { color:#a45f4e; }
+.ar-audio-author { font-size:19px; }
+.ar-video-card {
+  display:flex;
+  flex-direction:column;
+  gap:9px;
+  min-height:145px;
+  padding:12px;
+  background:linear-gradient(145deg,#f3eadd,#fffaf2);
+}
+.ar-video-card video { display:none;width:100%;border-radius:9px;background:#171513; }
+.ar-video-card.is-loaded video { display:block; }
+.ar-video-load {
+  min-height:42px;
+  border:1px solid rgba(133,111,77,.27);
+  border-radius:22px;
+  background:#766247;
+  color:#fffaf2;
+  font:9px "Marcellus",Georgia,serif;
+  letter-spacing:.07em;
+}
+.ar-video-card p { margin:0;color:#86745a;font:13px "Cormorant Garamond",Georgia,serif;text-align:center; }
+.ar-album-full-image { max-width:min(95vw,1100px);max-height:82svh;object-fit:contain;border-radius:7px; }
+.ar-album-loading-full { color:#fffaf2;text-align:center;font:17px "Cormorant Garamond",Georgia,serif; }
+.ar-album-full-actions { display:flex;justify-content:center;margin:8px 0 0; }
+.ar-album-full-actions button {
+  min-height:43px;padding:10px 19px;border:1px solid rgba(255,255,255,.5);border-radius:24px;
+  background:#766247;color:#fffaf2;font:9px "Marcellus",Georgia,serif;letter-spacing:.1em;
+}
+.ar-album-download {
+  padding:0;border:0;background:transparent;color:#75563d;font:8px "Marcellus",Georgia,serif;
+  text-decoration:underline;text-underline-offset:3px;cursor:pointer;
+}
+.ar-album-download:disabled { opacity:.6; }
+.ar-album-lightbox { overflow:auto; }
+.ar-album-lightbox #arAlbumLightboxContent { display:flex;flex-direction:column;align-items:center;justify-content:center;gap:13px;width:100%; }
+@media(max-width:360px) {
+  .ar-panel-login-card { padding:26px 18px 23px; }
+  .ar-panel-private-bar { font-size:7px; }
+}
