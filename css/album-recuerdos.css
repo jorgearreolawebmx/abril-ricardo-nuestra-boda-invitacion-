@@ -58,3 +58,143 @@ button,a{font:inherit}
 .ar-album-lightbox img{max-width:100%;max-height:88svh;object-fit:contain}
 @media(min-width:560px){.ar-album-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.ar-album-panel{padding:22px}.ar-album-stats{max-width:470px}}
 @media(max-width:360px){.ar-album-shell{padding-left:12px;padding-right:12px}.ar-album-panel{padding:15px 11px}.ar-album-grid{gap:8px}.ar-album-filters{gap:5px}.ar-album-filters button{padding:7px 10px}}
+
+
+/* Miniaturas ligeras obtenidas desde Drive */
+.ar-album-media {
+  cursor: zoom-in;
+  transition: opacity .22s ease, transform .22s ease;
+}
+.ar-album-media.is-loading {
+  min-height: 150px;
+  opacity: .45;
+  background: linear-gradient(110deg,#eee4d7 8%,#f8f1e7 18%,#eee4d7 33%);
+  background-size: 200% 100%;
+}
+.ar-album-media:not(.is-loading) { opacity: 1; }
+.ar-album-media:hover { transform: scale(1.015); }
+
+/* Reproductor de voz propio: evita el iframe negro de Google Drive */
+.ar-album-card:has(.ar-audio-card) { padding: 0; }
+.ar-audio-card {
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  min-height:150px;
+  padding:14px 12px 12px;
+  background:linear-gradient(145deg,#fffaf0,#f2eadb);
+}
+.ar-audio-heading {
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  gap:3px;
+  padding:0 2px;
+}
+.ar-audio-title {
+  color:#9b845e;
+  font:8px "Marcellus",Georgia,serif;
+  letter-spacing:.17em;
+}
+.ar-audio-author {
+  max-width:100%;
+  overflow:hidden;
+  color:#69543e;
+  font:italic 18px/1.1 "Cormorant Garamond",Georgia,serif;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.ar-audio-player {
+  display:flex;
+  align-items:center;
+  gap:9px;
+  width:100%;
+  min-height:51px;
+  padding:7px 9px;
+  border:1px solid rgba(255,255,255,.75);
+  border-radius:15px;
+  background:#e8ebd6;
+  box-shadow:inset 0 1px 2px rgba(83,87,61,.08);
+}
+.ar-audio-play {
+  display:grid;
+  place-items:center;
+  flex:0 0 34px;
+  width:34px;
+  height:34px;
+  border:0;
+  border-radius:50%;
+  background:#737957;
+  color:#fffdf5;
+  font:15px Arial,sans-serif;
+  cursor:pointer;
+  box-shadow:0 3px 7px rgba(67,73,47,.2);
+}
+.ar-audio-wave {
+  position:relative;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:2px;
+  flex:1 1 auto;
+  min-width:0;
+  height:35px;
+  overflow:hidden;
+  padding:0 1px;
+  border:0;
+  background:transparent;
+  cursor:pointer;
+}
+.ar-audio-wave i {
+  position:relative;
+  z-index:0;
+  display:block;
+  flex:1 1 2px;
+  max-width:4px;
+  min-width:2px;
+  border-radius:4px;
+  background:#9a9b7b;
+  opacity:.9;
+  transition:background .12s ease;
+}
+.ar-audio-wave i.is-played { background:#596542; }
+.ar-audio-time {
+  flex:0 0 auto;
+  min-width:57px;
+  color:#71694f;
+  font:9px "Marcellus",Georgia,serif;
+  text-align:right;
+  white-space:nowrap;
+}
+.ar-audio-card audio { display:none; }
+.ar-audio-fallback {
+  display:block;
+  margin:0 2px;
+  color:#875f46;
+  font:11px "Marcellus",Georgia,serif;
+  text-decoration:underline;
+  text-underline-offset:3px;
+}
+.ar-audio-card.has-audio-error .ar-audio-time { color:#986b50; }
+.ar-album-full-view {
+  width:min(100%,1000px);
+  height:86svh;
+  border:0;
+  border-radius:8px;
+  background:#f5eee4;
+}
+.ar-album-open-original {
+  position:absolute;
+  left:50%;
+  bottom:14px;
+  transform:translateX(-50%);
+  padding:10px 16px;
+  border:1px solid rgba(255,255,255,.35);
+  border-radius:24px;
+  background:rgba(47,40,31,.82);
+  color:#fffaf1;
+  font:10px "Marcellus",Georgia,serif;
+  text-decoration:none;
+  white-space:nowrap;
+}
+.ar-album-lightbox { flex-direction:column; gap:12px; }

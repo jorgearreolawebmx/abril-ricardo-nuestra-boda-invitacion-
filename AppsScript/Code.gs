@@ -36,9 +36,20 @@ const AR_ALLOWED_TYPES = [
 
 function doGet(e) {
   const params = (e && e.parameter) ? e.parameter : {};
+  const callback = String(params.callback || '');
+
+  if (params.action === 'thumbnail') {
+    const result = getGalleryThumbnail_(String(params.id || ''));
+    if (!/^[A-Za-z_$][A-Za-z0-9_$\\.]*$/.test(callback)) {
+      return ContentService.createTextOutput(JSON.stringify(result))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    return ContentService.createTextOutput(callback + '(' + JSON.stringify(result) + ');')
+      .setMimeType(ContentService.MimeType.JAVASCRIPT);
+  }
+
   if (params.action === 'list') {
     const data = listSharedGallery_();
-    const callback = String(params.callback || '');
     if (!/^[A-Za-z_$][A-Za-z0-9_$\\.]*$/.test(callback)) {
       return ContentService.createTextOutput(JSON.stringify(data))
         .setMimeType(ContentService.MimeType.JSON);
@@ -94,8 +105,19 @@ function doPost(e) {
     const file = folder.createFile(blob);
 
     const messageText = String(params.messageText || '').trim().slice(0, 1200);
-    if (kind === 'message' && messageText) file.setDescription(messageText);
-    else file.setDescription('Compartido en la boda de Abril & Ricardo · 5 de agosto de 2027.');
+    const senderName = String(params.senderName || '').trim().replace(/[\r\n]/g, ' ').slice(0, 70);
+
+    if (kind === 'message' && messageText) {
+      file.setDescription(messageText);
+    } else if (kind === 'audio') {
+      const audioMeta = {
+        senderName: senderName || 'Invitado',
+        note: 'Saludo de voz de la boda de Abril & Ricardo.'
+      };
+      file.setDescription('AR_AUDIO_META:' + JSON.stringify(audioMeta));
+    } else {
+      file.setDescription('Compartido en la boda de Abril & Ricardo · 5 de agosto de 2027.');
+    }
 
     const publicLinkEnabled = ensurePublicLink_(file);
 
@@ -150,8 +172,7 @@ function listSharedGallery_() {
   const sharedKinds = ['booth', 'photo', 'video', 'message', 'audio'];
 
   sharedKinds.forEach(function(kind) {
-    const folderName = AR_FOLDERS[kind];
-    const folder = getOrCreateFolder_(folderName);
+    const folder = getOrCreateFolder_(AR_FOLDERS[kind]);
     const files = folder.getFiles();
 
     while (files.hasNext()) {
@@ -159,22 +180,41 @@ function listSharedGallery_() {
       const id = file.getId();
       const mime = file.getMimeType();
       const isPublic = ensurePublicLink_(file);
-      const viewUrl = 'https://drive.google.com/file/d/' + id + '/view?usp=sharing';
-      const downloadUrl = 'https://drive.google.com/uc?export=download&id=' + id;
-      const previewUrl = (kind === 'video' || kind === 'audio')
-        ? 'https://drive.google.com/file/d/' + id + '/preview'
-        : 'https://drive.google.com/thumbnail?id=' + id + '&sz=w1600';
+      const resourceKey = file.getResourceKey();
+      const resourceParam = resourceKey ? '&resourcekey=' + encodeURIComponent(resourceKey) : '';
+      const viewUrl = 'https://drive.google.com/file/d/' + id + '/view?usp=sharing' +
+        (resourceKey ? '&resourcekey=' + encodeURIComponent(resourceKey) : '');
+      const previewUrl = 'https://drive.google.com/file/d/' + id + '/preview' +
+        (resourceKey ? '?resourcekey=' + encodeURIComponent(resourceKey) : '');
+      const downloadUrl = file.getDownloadUrl();
+
+      let description = file.getDescription() || '';
+      let senderName = '';
+      if (kind === 'audio' && description.indexOf('AR_AUDIO_META:') === 0) {
+        try {
+          const metadata = JSON.parse(description.substring('AR_AUDIO_META:'.length));
+          senderName = String(metadata.senderName || 'Invitado').slice(0, 70);
+          description = metadata.note || '';
+        } catch (metadataError) {
+          senderName = 'Invitado';
+          description = 'Saludo de voz de la boda de Abril & Ricardo.';
+        }
+      }
 
       items.push({
         id: id,
         kind: kind,
         name: file.getName(),
         mimeType: mime,
-        description: file.getDescription() || '',
+        description: description,
+        senderName: senderName,
         createdAt: file.getDateCreated().toISOString(),
         publicLinkEnabled: isPublic,
+        thumbnailAction: 'thumbnail',
         previewUrl: previewUrl,
         viewUrl: viewUrl,
+        fullImageUrl: 'https://drive.google.com/uc?export=view&id=' + id + resourceParam,
+        audioUrl: (kind === 'audio') ? downloadUrl : '',
         downloadUrl: downloadUrl
       });
     }
@@ -185,6 +225,74 @@ function listSharedGallery_() {
   });
 
   return { success: true, items: items.slice(0, 200) };
+}
+
+
+function isWeddingGalleryFile_(file) {
+  const root = DriveApp.getFolderById(AR_ROOT_FOLDER_ID);
+  const allowedFolderIds = {};
+  const folders = root.getFolders();
+
+  while (folders.hasNext()) {
+    const folder = folders.next();
+    if (Object.keys(AR_FOLDERS).some(function(kind) {
+      return AR_FOLDERS[kind] === folder.getName();
+    })) {
+      allowedFolderIds[folder.getId()] = true;
+    }
+  }
+
+  const parents = file.getParents();
+  while (parents.hasNext()) {
+    if (allowedFolderIds[parents.next().getId()]) return true;
+  }
+  return false;
+}
+
+function getGalleryThumbnail_(fileId) {
+  const result = {
+    success: false,
+    fileId: fileId,
+    message: 'No se pudo generar la miniatura.'
+  };
+
+  try {
+    if (!/^[A-Za-z0-9_-]{10,}$/.test(fileId)) {
+      throw new Error('Identificador de archivo no válido.');
+    }
+
+    const file = DriveApp.getFileById(fileId);
+    if (!isWeddingGalleryFile_(file)) {
+      throw new Error('El archivo no pertenece al álbum de la boda.');
+    }
+    const mime = file.getMimeType();
+    if (mime.indexOf('image/') !== 0) {
+      throw new Error('El archivo no es una fotografía.');
+    }
+    if (!ensurePublicLink_(file)) {
+      throw new Error('La fotografía no tiene acceso público de lectura.');
+    }
+
+    // Drive genera una miniatura ligera; no se descarga la fotografía original
+    // para construir las tarjetas del álbum.
+    const thumbnail = file.getThumbnail();
+    if (!thumbnail) {
+      throw new Error('Google Drive todavía no generó una miniatura para esta fotografía.');
+    }
+
+    const contentType = thumbnail.getContentType() || 'image/jpeg';
+    const base64 = Utilities.base64Encode(thumbnail.getBytes());
+    return {
+      success: true,
+      fileId: fileId,
+      mimeType: contentType,
+      dataUrl: 'data:' + contentType + ';base64,' + base64
+    };
+  } catch (error) {
+    result.message = (error && error.message) ? error.message : 'No se pudo generar la miniatura.';
+  }
+
+  return result;
 }
 
 function sanitizeFileName_(name) {

@@ -76,3 +76,33 @@ button,a{font:inherit}
 .ag-open-album small{color:#907b61;font:13px/1.25 "Cormorant Garamond",Georgia,serif}
 .ag-open-album>b{font:22px Georgia,serif;color:#957b59}
 .ag-gallery-grid[hidden]{display:none!important}
+
+
+.ag-name-label {
+  display:block;
+  margin:4px 0 6px;
+  color:#80694d;
+  font:10px "Marcellus",Georgia,serif;
+  letter-spacing:.12em;
+}
+.ag-name-input {
+  display:block;
+  width:100%;
+  min-height:45px;
+  padding:11px 13px;
+  border:1px solid rgba(143,119,83,.30);
+  border-radius:12px;
+  outline:none;
+  background:#fffdf9;
+  color:#574b3c;
+  font:16px "Cormorant Garamond",Georgia,serif;
+}
+.ag-name-input:focus { border-color:#9a825d; box-shadow:0 0 0 3px rgba(154,130,93,.12); }
+.ag-audio-author-preview {
+  margin:10px 0 0;
+  color:#725b43;
+  text-align:center;
+  font:italic 17px "Cormorant Garamond",Georgia,serif;
+}
+.ag-audio-controls { flex-wrap:wrap; }
+.ag-audio-controls button { font:10px "Marcellus",Georgia,serif; letter-spacing:.06em; }

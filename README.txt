@@ -161,3 +161,14 @@ ACTUALIZACIÓN V21 — PANEL DE ÁLBUM DE INVITADOS
 - Las miniaturas de imágenes usan el endpoint thumbnail de Google Drive, con enlace alternativo a la ficha del archivo.
 - Se añadió el botón VER ÁLBUM DE RECUERDOS en galeria-fiesta.html.
 - Para que las mejoras del backend funcionen, hay que actualizar Apps Script con el nuevo Code.gs y desplegar una nueva versión de la misma implementación.
+
+
+ACTUALIZACIÓN V22 — MINIATURAS Y SALUDOS IDENTIFICADOS
+- El álbum consulta miniaturas ligeras directamente desde Apps Script/DriveApp.getThumbnail; las tarjetas ya no dependen de insertar la URL de miniatura de Drive directamente en el navegador.
+- Las miniaturas se consultan de forma diferida al acercarse a la pantalla y se mantienen en caché durante la sesión.
+- Al tocar una foto se abre la vista previa de Google Drive en un visor ampliado; el enlace Descargar conserva el archivo original.
+- Los saludos de voz ahora solicitan el nombre del invitado antes de iniciar la grabación.
+- El nombre se guarda en la descripción del archivo de audio de Drive y se presenta en la tarjeta.
+- El reproductor de voz se reemplazó por un control propio con botón reproducir/pausar, onda visual, avance y duración; se eliminó el iframe negro de Google Drive.
+- Los audios anteriores a esta versión no tienen autor asociado y se muestran como “Invitado”.
+- Para activar las miniaturas y guardar autores de audio, hay que actualizar AppsScript/Code.gs y desplegar una nueva versión de la implementación existente. La URL /exec no cambia.

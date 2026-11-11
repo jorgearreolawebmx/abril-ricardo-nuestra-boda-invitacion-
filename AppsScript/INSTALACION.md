@@ -85,3 +85,16 @@ El panel consulta la lista de archivos en Drive y los organiza en:
 El backend intenta corregir automáticamente el permiso de lectura de cada archivo y devuelve una URL de miniatura de Drive. Si la política de Google no permite compartir un archivo por enlace, aparecerá como no disponible en lugar de mostrar una miniatura rota.
 
 Al actualizar `AppsScript/Code.gs`, debes ir a **Implementar → Gestionar implementaciones → Editar → Nueva versión → Implementar**. La URL `/exec` se conserva; no es necesario volver a pegarla en `js/photo-booth-config.js`.
+
+
+## 9. Miniaturas de fotografías y visor
+
+La versión nueva del backend agrega `?action=thumbnail&id=...`. Esta acción consulta `DriveApp.getFileById(id).getThumbnail()` y devuelve una miniatura pequeña en formato de imagen para las tarjetas del álbum. Así, la lista no descarga los originales de todas las fotografías.
+
+Al tocar una miniatura, el panel abre la vista previa de Google Drive en un visor ampliado. El enlace **Descargar** continúa apuntando al archivo original en Drive.
+
+## 10. Nombre en los saludos de voz
+
+Al grabar un saludo, el invitado debe escribir su nombre. Ese dato se guarda en la descripción del archivo de audio en Drive y se muestra en su tarjeta del álbum como **De: Nombre**.
+
+Los audios antiguos, grabados antes de esta actualización, se mostrarán como **De: Invitado** porque no tenían guardado el nombre del remitente.

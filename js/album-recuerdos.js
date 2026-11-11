@@ -21,6 +21,7 @@
   let activeFilter = 'all';
   let refreshTimer = null;
   let currentRequest = 0;
+  const thumbnailCache = new Map();
 
   const typeOf = item => item.kind === 'booth' ? 'photo' : item.kind;
 
@@ -118,6 +119,199 @@
     }
 
     items.forEach(item => grid.appendChild(createCard(item)));
+    setupLazyThumbnails();
+  }
+
+  function thumbnailFallback(img, item) {
+    const fallback = document.createElement('div');
+    fallback.className = 'ar-album-fallback';
+    const message = document.createElement('span');
+    message.textContent = 'No se pudo cargar la miniatura.';
+    const link = document.createElement('a');
+    link.href = item.viewUrl || '#';
+    link.target = '_blank';
+    link.rel = 'noopener';
+    link.textContent = 'Abrir fotografía en Google Drive';
+    fallback.append(message, link);
+    img.replaceWith(fallback);
+  }
+
+  function requestThumbnail(item, img) {
+    if (thumbnailCache.has(item.id)) {
+      img.src = thumbnailCache.get(item.id);
+      img.classList.remove('is-loading');
+      return;
+    }
+
+    const callback = 'ARThumb_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+    const script = document.createElement('script');
+    let settled = false;
+    let timeoutId = null;
+
+    const finish = data => {
+      if (settled) return;
+      settled = true;
+      if (timeoutId) window.clearTimeout(timeoutId);
+      delete window[callback];
+      script.remove();
+
+      if (data && data.success && data.dataUrl) {
+        thumbnailCache.set(item.id, data.dataUrl);
+        img.src = data.dataUrl;
+        img.classList.remove('is-loading');
+      } else {
+        thumbnailFallback(img, item);
+      }
+    };
+
+    window[callback] = finish;
+    script.onerror = () => finish(null);
+    script.src = endpoint + '?action=thumbnail&id=' + encodeURIComponent(item.id) +
+      '&callback=' + encodeURIComponent(callback) + '&_=' + Date.now();
+    timeoutId = window.setTimeout(() => finish(null), 20000);
+    document.body.appendChild(script);
+  }
+
+  function setupLazyThumbnails() {
+    const images = Array.from(grid.querySelectorAll('img[data-drive-thumbnail]'));
+    if (!images.length) return;
+
+    if ('IntersectionObserver' in window) {
+      const observer = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+          if (!entry.isIntersecting) return;
+          const img = entry.target;
+          observer.unobserve(img);
+          requestThumbnail(img._driveItem, img);
+        });
+      }, { rootMargin: '180px 0px' });
+
+      images.forEach(img => observer.observe(img));
+    } else {
+      images.forEach(img => requestThumbnail(img._driveItem, img));
+    }
+  }
+
+  function createAudioPlayer(item) {
+    const wrap = document.createElement('div');
+    wrap.className = 'ar-audio-card';
+
+    const heading = document.createElement('div');
+    heading.className = 'ar-audio-heading';
+
+    const title = document.createElement('span');
+    title.className = 'ar-audio-title';
+    title.textContent = 'SALUDO DE VOZ';
+
+    const author = document.createElement('strong');
+    author.className = 'ar-audio-author';
+    author.textContent = 'De: ' + (item.senderName || 'Invitado');
+
+    heading.append(title, author);
+
+    const player = document.createElement('div');
+    player.className = 'ar-audio-player';
+
+    const audio = document.createElement('audio');
+    audio.preload = 'metadata';
+    audio.src = item.audioUrl || item.downloadUrl;
+    audio.setAttribute('aria-label', 'Saludo de voz de ' + (item.senderName || 'un invitado'));
+
+    const play = document.createElement('button');
+    play.type = 'button';
+    play.className = 'ar-audio-play';
+    play.textContent = '▶';
+    play.setAttribute('aria-label', 'Reproducir saludo');
+
+    const wave = document.createElement('button');
+    wave.type = 'button';
+    wave.className = 'ar-audio-wave';
+    wave.setAttribute('aria-label', 'Avanzar en el saludo de voz');
+
+    const heights = [10,16,23,14,27,18,31,22,13,26,34,17,24,13,29,19,35,23,15,28,18,32,21,12,25,34,18,28,14,23,31,16,26,19];
+    heights.forEach(height => {
+      const bar = document.createElement('i');
+      bar.style.height = height + 'px';
+      wave.appendChild(bar);
+    });
+
+    const time = document.createElement('span');
+    time.className = 'ar-audio-time';
+    time.textContent = '0:00 / --:--';
+
+    player.append(play, wave, time);
+    wrap.append(heading, player, audio);
+
+    function formatTime(seconds) {
+      if (!Number.isFinite(seconds) || seconds < 0) return '--:--';
+      const total = Math.floor(seconds);
+      return Math.floor(total / 60) + ':' + String(total % 60).padStart(2, '0');
+    }
+
+    function updateProgress() {
+      const duration = audio.duration || 0;
+      const current = audio.currentTime || 0;
+      const progress = duration ? (current / duration) * 100 : 0;
+      wave.style.setProperty('--audio-progress', progress + '%');
+      const bars = Array.from(wave.children);
+      const activeCount = Math.round((progress / 100) * bars.length);
+      bars.forEach((bar, index) => bar.classList.toggle('is-played', index < activeCount));
+      time.textContent = formatTime(current) + ' / ' + formatTime(duration);
+    }
+
+    play.addEventListener('click', async () => {
+      if (audio.paused) {
+        try {
+          await audio.play();
+          play.textContent = 'Ⅱ';
+          play.setAttribute('aria-label', 'Pausar saludo');
+        } catch (error) {
+          play.textContent = '▶';
+          play.setAttribute('aria-label', 'No se pudo reproducir; abrir desde Drive');
+          wrap.classList.add('has-audio-error');
+        }
+      } else {
+        audio.pause();
+      }
+    });
+
+    audio.addEventListener('loadedmetadata', updateProgress);
+    audio.addEventListener('timeupdate', updateProgress);
+    audio.addEventListener('play', () => {
+      play.textContent = 'Ⅱ';
+      play.setAttribute('aria-label', 'Pausar saludo');
+      wrap.classList.remove('has-audio-error');
+    });
+    audio.addEventListener('pause', () => {
+      play.textContent = '▶';
+      play.setAttribute('aria-label', 'Reproducir saludo');
+    });
+    audio.addEventListener('ended', () => {
+      play.textContent = '▶';
+      audio.currentTime = 0;
+      updateProgress();
+    });
+    audio.addEventListener('error', () => {
+      wrap.classList.add('has-audio-error');
+      time.textContent = 'Abrir en Drive';
+      if (!wrap.querySelector('.ar-audio-fallback')) {
+        const fallback = document.createElement('a');
+        fallback.className = 'ar-audio-fallback';
+        fallback.href = item.viewUrl || item.downloadUrl;
+        fallback.target = '_blank';
+        fallback.rel = 'noopener';
+        fallback.textContent = 'Reproducir saludo en Google Drive';
+        wrap.appendChild(fallback);
+      }
+    });
+    wave.addEventListener('click', event => {
+      if (!Number.isFinite(audio.duration) || !audio.duration) return;
+      const rect = wave.getBoundingClientRect();
+      const ratio = Math.min(1, Math.max(0, (event.clientX - rect.left) / rect.width));
+      audio.currentTime = ratio * audio.duration;
+    });
+
+    return wrap;
   }
 
   function createCard(item) {
@@ -140,45 +334,25 @@
       message.className = 'ar-album-message';
       message.textContent = item.description || 'Un mensaje para Abril y Ricardo.';
       card.appendChild(message);
-    } else if (item.kind === 'video' || item.kind === 'audio') {
-      const mediaWrap = document.createElement('div');
-      mediaWrap.className = item.kind === 'audio' ? 'ar-album-audio' : '';
-      if (item.kind === 'audio') {
-        const icon = document.createElement('span');
-        icon.textContent = '♫';
-        const caption = document.createElement('strong');
-        caption.textContent = 'SALUDO DE VOZ';
-        mediaWrap.append(icon, caption);
-      }
+    } else if (item.kind === 'video') {
       const frame = document.createElement('iframe');
-      frame.className = item.kind === 'video' ? 'ar-album-video' : '';
+      frame.className = 'ar-album-video';
       frame.src = item.previewUrl;
-      frame.title = item.kind === 'video' ? 'Video de la boda' : 'Saludo de voz';
+      frame.title = 'Video de la boda';
       frame.allow = 'autoplay; encrypted-media';
       frame.allowFullscreen = true;
       frame.loading = 'lazy';
-      mediaWrap.appendChild(frame);
-      card.appendChild(mediaWrap);
+      card.appendChild(frame);
+    } else if (item.kind === 'audio') {
+      card.appendChild(createAudioPlayer(item));
     } else {
       const image = document.createElement('img');
-      image.className = 'ar-album-media';
-      image.src = item.previewUrl;
+      image.className = 'ar-album-media is-loading';
       image.alt = 'Fotografía compartida por un invitado';
       image.loading = 'lazy';
-      image.addEventListener('click', () => openLightbox(item.previewUrl, item.viewUrl), { once: true });
-      image.addEventListener('error', () => {
-        const fallback = document.createElement('div');
-        fallback.className = 'ar-album-fallback';
-        const message = document.createElement('span');
-        message.textContent = 'La vista previa no está disponible.';
-        const open = document.createElement('a');
-        open.href = item.viewUrl || item.downloadUrl;
-        open.target = '_blank';
-        open.rel = 'noopener';
-        open.textContent = 'Abrir fotografía en Google Drive';
-        fallback.append(message, open);
-        image.replaceWith(fallback);
-      }, { once: true });
+      image.dataset.driveThumbnail = 'true';
+      image._driveItem = item;
+      image.addEventListener('click', () => openLightbox(item), { once: true });
       card.appendChild(image);
     }
 
@@ -198,22 +372,25 @@
     return card;
   }
 
-  function openLightbox(imageUrl, fallbackUrl) {
+  function openLightbox(item) {
     lightboxContent.replaceChildren();
-    const image = document.createElement('img');
-    image.src = imageUrl;
-    image.alt = 'Fotografía compartida en la boda';
-    image.onerror = () => {
-      image.remove();
-      const link = document.createElement('a');
-      link.href = fallbackUrl;
-      link.target = '_blank';
-      link.rel = 'noopener';
-      link.textContent = 'Abrir fotografía en Google Drive';
-      link.style.color = '#fff';
-      lightboxContent.appendChild(link);
-    };
-    lightboxContent.appendChild(image);
+
+    const frame = document.createElement('iframe');
+    frame.className = 'ar-album-full-view';
+    frame.src = item.previewUrl || item.viewUrl;
+    frame.title = 'Fotografía en tamaño completo';
+    frame.allow = 'autoplay';
+    frame.allowFullscreen = true;
+    lightboxContent.appendChild(frame);
+
+    const openOriginal = document.createElement('a');
+    openOriginal.className = 'ar-album-open-original';
+    openOriginal.href = item.viewUrl || item.downloadUrl;
+    openOriginal.target = '_blank';
+    openOriginal.rel = 'noopener';
+    openOriginal.textContent = 'Abrir original en Google Drive';
+    lightboxContent.appendChild(openOriginal);
+
     lightbox.hidden = false;
   }
 

@@ -18,6 +18,7 @@
   let pendingName = '';
   let pendingMime = '';
   let pendingKind = '';
+  let pendingSenderName = '';
   let cameraStream = null;
   let recorder = null;
   let audioChunks = [];
@@ -37,11 +38,12 @@
     composer.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
 
-  function makeUploadPanel(blob, name, mime, kind) {
+  function makeUploadPanel(blob, name, mime, kind, senderName = '') {
     pendingBlob = blob;
     pendingName = name;
     pendingMime = mime;
     pendingKind = kind;
+    pendingSenderName = String(senderName || '').trim();
 
     const wrap = document.createElement('div');
     if (kind === 'photo' || kind === 'video') {
@@ -58,6 +60,13 @@
       audio.className = 'ag-preview';
       audio.src = URL.createObjectURL(blob);
       wrap.appendChild(audio);
+    }
+
+    if (kind === 'audio' && pendingSenderName) {
+      const author = document.createElement('p');
+      author.className = 'ag-audio-author-preview';
+      author.textContent = 'Este saludo lo envía: ' + pendingSenderName;
+      wrap.appendChild(author);
     }
 
     const note = document.createElement('p');
@@ -179,60 +188,113 @@
 
   $('agRecordAudio').addEventListener('click', async () => {
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || !window.MediaRecorder) {
-      alert('Tu navegador no permite grabar audio desde esta página. Puedes compartir un video o escribir un mensaje.');
+      status('Este navegador no permite grabar voz aquí. Puedes escribir un mensaje o compartir un video.', true);
       return;
     }
+
     const wrap = document.createElement('div');
+    const nameLabel = document.createElement('label');
+    nameLabel.className = 'ag-name-label';
+    nameLabel.textContent = '¿Cómo te llamas?';
+
+    const nameInput = document.createElement('input');
+    nameInput.type = 'text';
+    nameInput.className = 'ag-name-input';
+    nameInput.name = 'senderName';
+    nameInput.autocomplete = 'name';
+    nameInput.maxLength = 70;
+    nameInput.required = true;
+    nameInput.placeholder = 'Escribe tu nombre';
+
     const info = document.createElement('p');
     info.className = 'ag-status';
-    info.textContent = 'Pulsa iniciar, graba tu saludo y después podrás escucharlo antes de enviarlo.';
+    info.textContent = 'Primero escribe tu nombre, después graba tu saludo para Abril y Ricardo.';
+
     const controls = document.createElement('div');
     controls.className = 'ag-audio-controls';
+
     const start = document.createElement('button');
-    start.type = 'button'; start.textContent = 'INICIAR';
+    start.type = 'button';
+    start.textContent = 'INICIAR GRABACIÓN';
+
     const stop = document.createElement('button');
-    stop.type = 'button'; stop.textContent = 'DETENER'; stop.disabled = true;
+    stop.type = 'button';
+    stop.textContent = 'DETENER';
+    stop.disabled = true;
+
     const playback = document.createElement('audio');
-    playback.controls = true; playback.className = 'ag-preview'; playback.hidden = true;
+    playback.controls = true;
+    playback.className = 'ag-preview';
+    playback.hidden = true;
+
     const send = document.createElement('button');
-    send.type = 'button'; send.className = 'ag-submit'; send.textContent = 'COMPARTIR SALUDO'; send.disabled = true;
+    send.type = 'button';
+    send.className = 'ag-submit';
+    send.textContent = 'CONTINUAR';
+    send.disabled = true;
+
     controls.append(start, stop);
-    wrap.append(info, controls, playback, send);
+    wrap.append(nameLabel, nameInput, info, controls, playback, send);
     openComposer('Graba un saludo', wrap);
 
     start.addEventListener('click', async () => {
+      const senderName = nameInput.value.trim();
+      if (senderName.length < 2) {
+        status('Escribe tu nombre para que sepamos quién envía el saludo.', true);
+        nameInput.focus();
+        return;
+      }
+
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         const options = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
-          ? { mimeType: 'audio/webm;codecs=opus' } : {};
+          ? { mimeType: 'audio/webm;codecs=opus' }
+          : (MediaRecorder.isTypeSupported('audio/mp4') ? { mimeType: 'audio/mp4' } : {});
         recorder = new MediaRecorder(stream, options);
         audioChunks = [];
-        recorder.ondataavailable = e => { if (e.data && e.data.size) audioChunks.push(e.data); };
+
+        recorder.ondataavailable = event => {
+          if (event.data && event.data.size) audioChunks.push(event.data);
+        };
+
         recorder.onstop = () => {
-          stream.getTracks().forEach(t => t.stop());
+          stream.getTracks().forEach(track => track.stop());
           const type = recorder.mimeType || 'audio/webm';
           recordedBlob = new Blob(audioChunks, { type });
           playback.src = URL.createObjectURL(recordedBlob);
           playback.hidden = false;
           send.disabled = false;
-          info.textContent = 'Escucha tu saludo. Si te gusta, compártelo con los novios.';
+          start.disabled = false;
+          stop.disabled = true;
+          info.textContent = 'Escucha tu saludo. Cuando estés conforme, continúa para compartirlo.';
         };
+
         recorder.start();
-        start.disabled = true; stop.disabled = false;
-        info.textContent = 'Grabando… cuando termines, pulsa DETENER.';
-      } catch (err) {
+        start.disabled = true;
+        stop.disabled = false;
+        send.disabled = true;
+        info.textContent = 'Grabando tu saludo… cuando termines, pulsa DETENER.';
+      } catch (error) {
         status('No se pudo acceder al micrófono. Revisa los permisos del navegador.', true);
       }
     });
+
     stop.addEventListener('click', () => {
       if (recorder && recorder.state !== 'inactive') recorder.stop();
       stop.disabled = true;
     });
+
     send.addEventListener('click', () => {
       if (!recordedBlob) return;
+      const senderName = nameInput.value.trim();
+      if (senderName.length < 2) {
+        status('Escribe tu nombre para identificar el saludo.', true);
+        nameInput.focus();
+        return;
+      }
       const type = recordedBlob.type || 'audio/webm';
       const ext = type.includes('mp4') ? 'm4a' : 'webm';
-      makeUploadPanel(recordedBlob, 'Saludo_' + Date.now() + '.' + ext, type, 'audio');
+      makeUploadPanel(recordedBlob, 'Saludo_' + Date.now() + '.' + ext, type, 'audio', senderName);
     });
   });
 
@@ -291,7 +353,8 @@
         fileData: base64,
         mimeType: pendingMime.split(';')[0].trim().toLowerCase(),
         fileName: pendingName,
-        messageText: messageText
+        messageText: messageText,
+        senderName: pendingSenderName
       });
       if (result.publicLinkEnabled === false) {
         status('El archivo se guardó, pero Google no permitió habilitar el enlace público. Revisa los permisos de Drive.', true);
