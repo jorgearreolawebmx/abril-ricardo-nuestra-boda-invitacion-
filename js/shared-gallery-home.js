@@ -39,5 +39,5 @@
   });
   window.setInterval(() => {
     if (!document.hidden) refresh();
-  }, 60000);
+  }, 90000);
 })();

@@ -15,6 +15,8 @@
   let instance = null;
   let loading = false;
   let refreshQueued = false;
+  let showingFallback = false;
+  const isMobile = !!(window.matchMedia && window.matchMedia('(pointer: coarse)').matches);
 
   function setStatus(message) {
     if (status) status.textContent = message;
@@ -54,9 +56,12 @@
       camera: { inertia: 1.08, smoothing: 12, friction: 2.8 },
       viewer: { enabled: true, scrim: 0.9, maxWidth: 0.9, maxHeight: 0.82, duration: 560 },
       intro: true,
-      maxTextureSize: 1280,
-      maxDPR: 1.6
+      maxTextureSize: isMobile ? 480 : 640,
+      maxDPR: isMobile ? 1.15 : 1.4,
+      loadConcurrency: 4,
+      initialLoadCount: Math.min(6, photos.length)
     });
+    showingFallback = !!isFallback;
     if (isFallback) {
       setStatus('Estas son fotografías de muestra. Las imágenes que compartan los invitados aparecerán aquí.');
     } else {
@@ -64,17 +69,18 @@
     }
   }
 
-  async function refresh() {
+  async function refresh(force = false) {
     if (!window.ARDriveGallery) return;
     if (loading) { refreshQueued = true; return; }
     loading = true;
     if (refreshButton) refreshButton.disabled = true;
     setStatus('Actualizando fotografías…');
     try {
-      const items = await window.ARDriveGallery.listPhotos(200);
+      const items = await window.ARDriveGallery.listPhotos(40, force);
       const photos = items.map(window.ARDriveGallery.toInfinitePhoto).filter(item => item.src && item.full);
       if (photos.length) render(photos, false);
-      else render(fallbackPhotos, true);
+      else if (!instance || !showingFallback) render(fallbackPhotos, true);
+      else setStatus('Estas son fotografías de muestra. Las imágenes que compartan los invitados aparecerán aquí.');
     } catch (error) {
       console.warn('[Galería infinita] No fue posible consultar Drive:', error);
       if (!instance) render(fallbackPhotos, true);
@@ -89,7 +95,7 @@
     }
   }
 
-  if (refreshButton) refreshButton.addEventListener('click', refresh);
+  if (refreshButton) refreshButton.addEventListener('click', () => refresh(true));
   if (shareButton && uploadSection) shareButton.addEventListener('click', () => uploadSection.scrollIntoView({ behavior: 'smooth', block: 'start' }));
   window.refreshARDriveInfiniteGallery = refresh;
   render(fallbackPhotos, true);

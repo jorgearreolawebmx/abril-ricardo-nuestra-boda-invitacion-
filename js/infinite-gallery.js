@@ -71,8 +71,10 @@
       duration: 560
     },
     intro: true,
-    maxTextureSize: 1280,
-    maxDPR: 2
+    maxTextureSize: 720,
+    maxDPR: 1.5,
+    loadConcurrency: 4,
+    initialLoadCount: 8
   };
 
   /* ------------------------------------------------------------------ */
@@ -208,9 +210,16 @@
     var maxPhotoScale = 1;
     var listeners = [];
 
+    function scheduleFrame() {
+      if (!destroyed && !rafId) { rafId = global.requestAnimationFrame(step); }
+    }
     function on(t, type, fn, opts) {
-      t.addEventListener(type, fn, opts);
-      listeners.push([t, type, fn, opts]);
+      var wrapped = function () {
+        fn.apply(this, arguments);
+        scheduleFrame();
+      };
+      t.addEventListener(type, wrapped, opts);
+      listeners.push([t, type, wrapped, opts]);
     }
 
     /* ---------- Cámara / proyección ---------- */
@@ -350,8 +359,8 @@
 
     /* ---------- Bucle principal ---------- */
     function step(now) {
+      rafId = 0;
       if (destroyed) { return; }
-      rafId = global.requestAnimationFrame(step);
       var dt = Math.min(0.05, Math.max(0.001, (now - lastT) / 1000));
       lastT = now;
       if (!ready) { return; }
@@ -406,6 +415,10 @@
         var anim = render(dt);
         forceRender = anim;
       }
+      // El motor duerme cuando la cámara está quieta. Los eventos vuelven a despertarlo.
+      if (moving || introActive || forceRender || hoverBusy() || viewer.busy || keys.ArrowRight || keys.ArrowLeft || keys.ArrowDown || keys.ArrowUp || keys.w || keys.s || keys.PageUp || keys.PageDown) {
+        scheduleFrame();
+      }
     }
     function hoverBusy() { return false; }
 
@@ -418,6 +431,7 @@
       canvas.height = Math.round(H * dpr);
       forceRender = true;
       if (viewer.open) { layoutViewerImage(); }
+      scheduleFrame();
     }
 
     /* ---------- Entrada: puntero ---------- */
@@ -563,6 +577,7 @@
       zoom.ax = W / 2; zoom.ay = H / 2;
       zoom.target = clamp(z, cfg.zoom.min, cfg.zoom.max);
       forceRender = true;
+      scheduleFrame();
     }
 
     /* ------------------------------------------------------------------ */
@@ -748,52 +763,90 @@
       function tick() {
         loaded++;
         progressEl.style.transform = 'scaleX(' + (total ? loaded / total : 1) + ')';
+        if (loaded >= total) { progressEl.classList.add('is-done'); }
       }
       var results = new Array(raw.length);
-      var pending = raw.length;
+      var nextLoad = 0, nextAppend = 0, completed = 0;
+      var concurrency = Math.max(1, Math.min(8, Number(cfg.loadConcurrency) || 4));
+      var firstBatch = Math.min(raw.length, Math.max(1, Number(cfg.initialLoadCount) || 8));
+      var activated = false;
+
+      function activate() {
+        if (activated || !photos.length) { return; }
+        activated = true;
+        photos.forEach(function (p) { maxPhotoScale = Math.max(maxPhotoScale, p.scale); });
+        if (cfg.intro && !reduceMotion) { cam.z = sp.start.z - 14; }
+        ready = true;
+        container.classList.add('is-ready');
+        forceRender = true;
+        scheduleFrame();
+      }
+
+      function appendCompletedInOrder() {
+        // Mantiene el orden recibido (más recientes primero) aunque las descargas terminen fuera de orden.
+        while (nextAppend < raw.length && results[nextAppend] !== undefined) {
+          if (results[nextAppend]) {
+            photos.push(results[nextAppend]);
+            maxPhotoScale = Math.max(maxPhotoScale, results[nextAppend].scale);
+          }
+          nextAppend++;
+        }
+        if (!activated && photos.length && (photos.length >= firstBatch || nextAppend >= firstBatch || completed === raw.length)) {
+          activate();
+        } else if (activated && photos.length) {
+          forceRender = true;
+          scheduleFrame();
+        }
+        if (completed >= raw.length) {
+          progressEl.classList.add('is-done');
+          if (!photos.length) {
+            msgEl.textContent = cfg.texts.error;
+            msgEl.style.display = 'block';
+          }
+          scheduleFrame();
+        }
+      }
 
       if (cfg.background.src) {
         var bg = new Image();
         bg.onload = bg.onerror = tick;
         bg.src = cfg.background.src;
       }
-      if (!pending) { finish(); return; }
+      if (!raw.length) {
+        if (!cfg.background.src) progressEl.classList.add('is-done');
+        msgEl.textContent = cfg.texts.error;
+        msgEl.style.display = 'block';
+        return;
+      }
 
-      raw.forEach(function (p, i) {
+      function worker() {
+        if (nextLoad >= raw.length) { return; }
+        var index = nextLoad++;
+        var p = raw[index];
         var im = new Image();
+        im.decoding = 'async';
         im.onload = function () {
           try {
-            results[i] = {
+            results[index] = {
               src: p.src, full: p.full || p.src, alt: p.alt || '',
               scale: p.scale || 1,
               ar: im.naturalWidth / im.naturalHeight,
               mips: buildMips(im, cfg.maxTextureSize)
             };
           } catch (err) {
+            results[index] = null;
             if (global.console) { console.warn('[InfiniteGallery] no se pudo procesar', p.src, err); }
           }
-          tick(); if (--pending === 0) { finish(); }
+          completed++; tick(); appendCompletedInOrder(); worker();
         };
         im.onerror = function () {
+          results[index] = null;
           if (global.console) { console.warn('[InfiniteGallery] no se pudo cargar', p.src); }
-          tick(); if (--pending === 0) { finish(); }
+          completed++; tick(); appendCompletedInOrder(); worker();
         };
         im.src = p.src;
-      });
-
-      function finish() {
-        photos = results.filter(Boolean);
-        progressEl.classList.add('is-done');
-        if (!photos.length) {
-          msgEl.textContent = cfg.texts.error; msgEl.style.display = 'block';
-          return;
-        }
-        photos.forEach(function (p) { maxPhotoScale = Math.max(maxPhotoScale, p.scale); });
-        if (cfg.intro && !reduceMotion) { cam.z = sp.start.z - 14; }
-        ready = true;
-        container.classList.add('is-ready');
-        forceRender = true;
       }
+      for (var i = 0; i < Math.min(concurrency, raw.length); i++) { worker(); }
     }
 
     /* ---------- Arranque ---------- */
@@ -804,7 +857,7 @@
     } else { on(global, 'resize', resize); }
     loadPhotos();
     lastT = performance.now();
-    rafId = global.requestAnimationFrame(step);
+    scheduleFrame();
 
     /* ---------- API pública ---------- */
     return {

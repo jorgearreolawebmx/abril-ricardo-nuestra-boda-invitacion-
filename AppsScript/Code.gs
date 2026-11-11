@@ -226,6 +226,7 @@ function doPost(e) {
 
     const isGalleryPhoto = (kind === 'booth' || kind === 'photo') && mimeType.indexOf('image/') === 0;
     const accessConfirmed = isGalleryPhoto ? setFilePublicForGallery_(file) : setFilePrivate_(file);
+    if (isGalleryPhoto && accessConfirmed) clearPublicGalleryCache_();
 
     result = {
       type: 'AR_PHOTO_UPLOAD_RESULT',
@@ -315,12 +316,25 @@ function listSharedGallery_() {
   return { success: true, items: items.slice(0, 200) };
 }
 
+function clearPublicGalleryCache_() {
+  const cache = CacheService.getScriptCache();
+  [3, 40, 60].forEach(function(limit) {
+    cache.remove('AR_PUBLIC_PHOTOS_V27_' + limit);
+  });
+}
+
 function listPublicGalleryPhotos_(requestedLimit) {
+  const numericLimit = Number(requestedLimit || 40);
+  const limit = Math.max(1, Math.min(60, isFinite(numericLimit) ? Math.floor(numericLimit) : 40));
+  const cache = CacheService.getScriptCache();
+  const cacheKey = 'AR_PUBLIC_PHOTOS_V27_' + limit;
+  const cached = cache.get(cacheKey);
+  if (cached) {
+    try { return JSON.parse(cached); } catch (cacheError) { cache.remove(cacheKey); }
+  }
+
   const items = [];
   const publicKinds = ['booth', 'photo'];
-  const numericLimit = Number(requestedLimit || 80);
-  const limit = Math.max(1, Math.min(200, isFinite(numericLimit) ? Math.floor(numericLimit) : 80));
-
   publicKinds.forEach(function(kind) {
     const folder = getOrCreateFolder_(AR_FOLDERS[kind]);
     const files = folder.getFiles();
@@ -329,8 +343,12 @@ function listPublicGalleryPhotos_(requestedLimit) {
       const mime = String(file.getMimeType() || '').toLowerCase();
       if (mime.indexOf('image/') !== 0) continue;
 
-      // Si una política de la cuenta impide compartir por enlace, omitimos la foto de la vista pública.
-      if (!setFilePublicForGallery_(file)) continue;
+      // Los permisos se asignan una sola vez al guardar la foto. Aquí solo los verificamos;
+      // no se modifica Drive durante cada visita a la galería.
+      let publicAccess = false;
+      try { publicAccess = file.getSharingAccess() === DriveApp.Access.ANYONE_WITH_LINK; }
+      catch (permissionError) { publicAccess = false; }
+      if (!publicAccess) continue;
 
       const id = file.getId();
       items.push({
@@ -338,7 +356,7 @@ function listPublicGalleryPhotos_(requestedLimit) {
         kind: kind,
         mimeType: mime,
         createdAt: file.getDateCreated().toISOString(),
-        thumbnailUrl: 'https://drive.google.com/thumbnail?id=' + encodeURIComponent(id) + '&sz=w1400',
+        thumbnailUrl: 'https://drive.google.com/thumbnail?id=' + encodeURIComponent(id) + '&sz=w640',
         imageUrl: 'https://drive.google.com/uc?export=view&id=' + encodeURIComponent(id)
       });
     }
@@ -348,7 +366,10 @@ function listPublicGalleryPhotos_(requestedLimit) {
     return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
   });
 
-  return { success: true, items: items.slice(0, limit) };
+  const response = { success: true, items: items.slice(0, limit) };
+  // Metadatos pequeños; la caché evita volver a recorrer y consultar permisos en cada visita.
+  try { cache.put(cacheKey, JSON.stringify(response), 60); } catch (cacheError) { /* caché opcional */ }
+  return response;
 }
 
 function isWeddingGalleryFile_(file) {
