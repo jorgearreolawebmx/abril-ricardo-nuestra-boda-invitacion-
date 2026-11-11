@@ -45,8 +45,9 @@
 
   if (closeEnvelopeButton) {
     closeEnvelopeButton.addEventListener('click', () => {
-      // Reinicia la invitación desde el sobre para que pueda abrirse de nuevo.
-      window.location.reload();
+      // Vuelve a la portada limpia: elimina ?skipEnvelope=1 y cualquier ancla.
+      // Así se muestra otra vez el sobre cerrado, incluso si se llegó desde una página interna.
+      window.location.replace(window.location.pathname);
     });
   }
 

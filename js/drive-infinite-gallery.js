@@ -3,8 +3,6 @@
   const container = document.getElementById('agDriveInfiniteGallery');
   const status = document.getElementById('agDriveGalleryStatus');
   const refreshButton = document.getElementById('agRefreshDriveGallery');
-  const shareButton = document.getElementById('agGoToShare');
-  const uploadSection = document.getElementById('agUploadSection');
   if (!container || !window.initInfiniteGallery) return;
 
   const fallbackPhotos = [
@@ -111,7 +109,6 @@
   }
 
   if (refreshButton) refreshButton.addEventListener('click', () => refresh(true));
-  if (shareButton && uploadSection) shareButton.addEventListener('click', () => uploadSection.scrollIntoView({ behavior: 'smooth', block: 'start' }));
   window.refreshARDriveInfiniteGallery = (force = true) => refresh(force);
   container.classList.add('ag-drive-loading');
   setStatus('Preparando la galería…');

@@ -1,0 +1,146 @@
+*{box-sizing:border-box}
+:root{color-scheme:light}
+body{margin:0;min-height:100vh;background:#eee4d4 url('../assets/textura-papel-suave.png') center top / 560px auto repeat;color:#5c503e;font-family:"Cormorant Garamond",Georgia,serif}
+button,a{font:inherit}
+.ag-bg-video{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;z-index:-2}
+.ag-bg-wash{position:fixed;inset:0;z-index:-1;background:rgba(246,239,226,.76);backdrop-filter:blur(1px)}
+.ag-shell{width:min(100%,520px);min-height:100vh;margin:0 auto;padding:18px 17px 40px;background:rgba(255,250,242,.22);border-left:1px solid rgba(255,255,255,.35);border-right:1px solid rgba(255,255,255,.35)}
+.ag-back{display:inline-flex;align-items:center;gap:7px;padding:8px 14px;border:1px solid rgba(151,124,87,.25);border-radius:30px;background:rgba(255,252,247,.88);color:#806c50;text-decoration:none;font:11px "Marcellus",Georgia,serif;box-shadow:0 4px 12px rgba(68,52,34,.08)}
+.ag-header{text-align:center;padding:25px 8px 22px}
+.ag-eyebrow{margin:0 0 8px;color:#9a8059;font:9px "Marcellus",Georgia,serif;letter-spacing:.22em}
+.ag-header h1{margin:0;color:#66513c;font:43px/1.1 "Cormorant Garamond",Georgia,serif;font-weight:500}
+.ag-header h1 span{color:#a68b63;font-style:italic}
+.ag-intro{margin:8px auto 0;color:#89785f;font-size:17px}
+.ag-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px;margin:8px 0 28px}
+.ag-action{display:flex;align-items:flex-start;flex-direction:column;gap:13px;min-height:142px;padding:17px 16px;border:1px solid rgba(255,255,255,.86);border-radius:22px;background:rgba(255,253,249,.88);color:#624d3c;text-align:left;box-shadow:0 9px 20px rgba(77,57,37,.13),inset 0 1px 0 #fff;cursor:pointer;transition:transform .18s ease,box-shadow .18s ease}
+.ag-action:active{transform:scale(.98)}
+.ag-action-featured{background:linear-gradient(145deg,rgba(248,221,207,.95),rgba(255,250,243,.93))}
+.ag-action-icon{display:grid;place-items:center;width:48px;height:48px;border-radius:50%;background:linear-gradient(145deg,#fff,#e2d2bf);color:#98765c;font:25px Georgia,serif;box-shadow:0 4px 11px rgba(92,68,47,.17)}
+.ag-action-featured .ag-action-icon{background:linear-gradient(145deg,#e9b7a8,#c98779);color:#754d45}
+.ag-action strong{font:600 16px/1.05 "Marcellus",Georgia,serif;color:#604c3d}
+.ag-composer{margin:0 0 28px;padding:17px;border:1px solid rgba(255,255,255,.85);border-radius:22px;background:rgba(255,252,247,.94);box-shadow:0 10px 25px rgba(76,57,38,.12)}
+.ag-composer[hidden]{display:none}
+.ag-composer-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:13px}
+.ag-composer-head h2{margin:0;color:#68543e;font:italic 26px "Cormorant Garamond",Georgia,serif}
+.ag-composer-head button,.ag-lightbox>button{width:34px;height:34px;border:0;border-radius:50%;background:#78604a;color:#fff;font-size:23px;cursor:pointer}
+.ag-preview{display:block;width:100%;max-height:360px;object-fit:contain;border-radius:13px;background:#eee5d8}
+.ag-field{display:block;width:100%;min-height:110px;padding:12px;border:1px solid rgba(143,119,83,.3);border-radius:13px;background:#fffdf9;color:#514737;font:16px/1.4 "Cormorant Garamond",Georgia,serif;resize:vertical}
+.ag-submit{display:flex;justify-content:center;align-items:center;width:100%;min-height:48px;margin-top:13px;padding:12px 18px;border:0;border-radius:30px;background:#76543a;color:#fff;font:600 11px "Marcellus",Georgia,serif;letter-spacing:.12em;cursor:pointer}
+.ag-submit:disabled{opacity:.55;cursor:wait}
+.ag-status{min-height:18px;margin:10px 0 0;color:#77674f;font:14px "Cormorant Garamond",Georgia,serif;text-align:center}
+.ag-status.error{color:#a64e43}
+.ag-audio-controls{display:flex;gap:8px}
+.ag-audio-controls button{flex:1;min-height:42px;border:1px solid #a28a68;border-radius:22px;background:#fffaf2;color:#725c43}
+.ag-gallery-section{padding:5px 0}
+.ag-gallery-heading{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.ag-gallery-heading h2{margin:0;color:#65533f;font:30px/1.05 "Cormorant Garamond",Georgia,serif;font-weight:500}
+.ag-refresh{width:38px;height:38px;border:1px solid rgba(143,119,83,.3);border-radius:50%;background:rgba(255,252,247,.85);color:#80694d;font-size:22px;cursor:pointer}
+.ag-gallery-intro{margin:8px 0 15px;color:#82725a;font-size:16px}
+.ag-gallery-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
+.ag-empty{grid-column:1/-1;display:flex;align-items:center;justify-content:center;flex-direction:column;min-height:185px;padding:20px;border:1px solid rgba(255,255,255,.9);border-radius:20px;background:rgba(255,253,249,.86);box-shadow:0 9px 22px rgba(75,56,38,.1);text-align:center}
+.ag-empty span{color:#c99d83;font-size:33px}
+.ag-empty p{margin:7px 0 2px;color:#8b7b68;font-size:17px}
+.ag-empty strong{color:#765346;font:600 13px "Marcellus",Georgia,serif}
+.ag-card{overflow:hidden;border:1px solid rgba(255,255,255,.9);border-radius:15px;background:rgba(255,253,249,.94);box-shadow:0 6px 15px rgba(75,56,38,.1)}
+.ag-card-media{display:block;width:100%;aspect-ratio:1/1;object-fit:cover;background:#e8dfd2}
+.ag-card video,.ag-card iframe{width:100%;aspect-ratio:1/1;display:block;border:0;background:#1b1815;object-fit:cover}
+.ag-card-message{display:flex;align-items:center;justify-content:center;min-height:145px;padding:15px;background:linear-gradient(145deg,#f4e5d7,#fffaf2);color:#705a45;text-align:center;font:italic 19px/1.3 "Cormorant Garamond",Georgia,serif;overflow-wrap:anywhere}
+.ag-card-meta{display:flex;align-items:center;justify-content:space-between;gap:6px;padding:9px 10px;color:#89765b;font:9px "Marcellus",Georgia,serif}
+.ag-card-meta a{color:#75563d;text-decoration:underline;text-underline-offset:3px}
+.ag-last-updated{margin:14px 0 0;color:#99876c;text-align:center;font:10px "Marcellus",Georgia,serif}
+.ag-footer{margin:35px 0 0;color:#917b5b;text-align:center;font:10px "Marcellus",Georgia,serif;letter-spacing:.12em}
+.ag-camera-modal,.ag-lightbox{position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;padding:18px;background:rgba(24,21,18,.9);backdrop-filter:blur(8px)}
+.ag-camera-modal[hidden],.ag-lightbox[hidden]{display:none}
+.ag-camera-dialog{width:min(100%,440px);padding:16px;border-radius:20px;background:#f6efe4}
+.ag-camera-view{overflow:hidden;aspect-ratio:3/4;border-radius:14px;background:#111}
+.ag-camera-view video{width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
+.ag-lightbox{flex-direction:column}
+.ag-lightbox>button{align-self:flex-end;flex:0 0 auto}
+#agLightboxContent{width:min(100%,800px);max-height:85svh;display:flex;justify-content:center;align-items:center}
+#agLightboxContent img,#agLightboxContent video{max-width:100%;max-height:82svh;object-fit:contain}
+@media(min-width:600px){.ag-shell{padding:24px 24px 50px}.ag-actions{gap:16px}.ag-action{min-height:155px;padding:20px}.ag-gallery-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+
+
+.ag-open-album {
+  display:flex;align-items:center;gap:12px;width:100%;min-height:76px;margin:15px 0 4px;
+  padding:13px 15px;border:1px solid rgba(255,255,255,.9);border-radius:17px;
+  background:linear-gradient(135deg,rgba(255,251,243,.96),rgba(242,231,215,.91));
+  color:#6e563f;text-decoration:none;box-shadow:0 8px 19px rgba(79,59,38,.12);
+}
+.ag-open-album-icon {
+  display:grid;place-items:center;flex:0 0 43px;width:43px;height:43px;border-radius:50%;
+  background:#7b5a3e;color:#fff;font:23px Georgia,serif;
+}
+.ag-open-album>span:nth-child(2){display:flex;flex:1;flex-direction:column;gap:4px;text-align:left}
+.ag-open-album strong{font:600 10px "Marcellus",Georgia,serif;letter-spacing:.08em}
+.ag-open-album small{color:#907b61;font:13px/1.25 "Cormorant Garamond",Georgia,serif}
+.ag-open-album>b{font:22px Georgia,serif;color:#957b59}
+.ag-gallery-grid[hidden]{display:none!important}
+
+
+.ag-name-label {
+  display:block;
+  margin:4px 0 6px;
+  color:#80694d;
+  font:10px "Marcellus",Georgia,serif;
+  letter-spacing:.12em;
+}
+.ag-name-input {
+  display:block;
+  width:100%;
+  min-height:45px;
+  padding:11px 13px;
+  border:1px solid rgba(143,119,83,.30);
+  border-radius:12px;
+  outline:none;
+  background:#fffdf9;
+  color:#574b3c;
+  font:16px "Cormorant Garamond",Georgia,serif;
+}
+.ag-name-input:focus { border-color:#9a825d; box-shadow:0 0 0 3px rgba(154,130,93,.12); }
+.ag-audio-author-preview {
+  margin:10px 0 0;
+  color:#725b43;
+  text-align:center;
+  font:italic 17px "Cormorant Garamond",Georgia,serif;
+}
+.ag-audio-controls { flex-wrap:wrap; }
+.ag-audio-controls button { font:10px "Marcellus",Georgia,serif; letter-spacing:.06em; }
+
+
+.ag-private-note {
+  margin:5px 0 0;
+  padding:22px 18px;
+  border:1px solid rgba(255,255,255,.86);
+  border-radius:20px;
+  background:rgba(255,251,244,.82);
+  box-shadow:0 8px 20px rgba(77,57,37,.09);
+  text-align:center;
+}
+.ag-private-note h2 { margin:0 0 8px;color:#65533f;font:29px/1.05 "Cormorant Garamond",Georgia,serif;font-weight:500; }
+.ag-private-note>p:not(.ag-eyebrow) { margin:0 auto;max-width:330px;color:#82725a;font:16px/1.4 "Cormorant Garamond",Georgia,serif; }
+.ag-private-note>span { display:block;margin:12px 0 0;color:#9b805d;font:italic 14px "Cormorant Garamond",Georgia,serif; }
+.ag-private-note-status { margin:10px 0 0;color:#7d785b;font:10px "Marcellus",Georgia,serif; }
+
+
+.ag-upload-body{position:relative;isolation:isolate}
+.ag-upload-body::before{content:"";position:fixed;inset:0;z-index:-1;background:rgba(246,239,226,.48);pointer-events:none}
+.ag-page-nav{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.ag-gallery-back{background:rgba(255,252,247,.72)}
+.ag-footer{display:flex;flex-direction:column;align-items:center;gap:12px}
+.ag-footer p{margin:0}
+.ag-footer-link{color:#806c50;text-decoration:none;font:10px "Marcellus",Georgia,serif;border-bottom:1px solid rgba(151,124,87,.35);padding-bottom:3px}
+
+.ag-camera-file-button {
+  display: block;
+  min-height: 42px;
+  margin: 10px auto 0;
+  padding: 0 18px;
+  border: 1px solid rgba(121, 86, 60, .45);
+  border-radius: 25px;
+  background: rgba(255, 250, 240, .9);
+  color: #705b40;
+  font: 10px "Marcellus", Georgia, serif;
+  letter-spacing: .1em;
+  cursor: pointer;
+}

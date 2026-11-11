@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#eee4d4">
+  <meta name="description" content="Comparte fotografías, videos y mensajes de la boda de Abril & Ricardo.">
+  <title>Comparte tu recuerdo | Abril & Ricardo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Marcellus&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/upload-page.css">
+</head>
+<body class="ag-upload-body">
+  <main class="ag-shell" id="agUploadSection">
+    <nav class="ag-page-nav" aria-label="Navegación">
+      <a class="ag-back" href="index.html?skipEnvelope=1#inicio">‹ Volver a la invitación</a>
+      <a class="ag-back ag-gallery-back" href="galeria-fiesta.html">Ver galería ↗</a>
+    </nav>
+
+    <header class="ag-header">
+      <p class="ag-eyebrow">FORMA PARTE DE NUESTROS RECUERDOS</p>
+      <h1>Comparte tu <span>momento</span></h1>
+      <p class="ag-intro">Sube tus fotografías para que todos podamos volver a vivir la celebración.</p>
+    </header>
+
+    <section class="ag-actions" aria-label="Opciones para compartir">
+      <button class="ag-action ag-action-featured" id="agTakePhoto" type="button">
+        <span class="ag-action-icon">◎</span><strong>Tomar<br>una foto</strong>
+      </button>
+      <button class="ag-action" id="agChooseFile" type="button">
+        <span class="ag-action-icon">▧</span><strong>Elegir<br>del celular</strong>
+      </button>
+      <button class="ag-action" id="agWriteMessage" type="button">
+        <span class="ag-action-icon">✎</span><strong>Escribir<br>un mensaje</strong>
+      </button>
+      <button class="ag-action" id="agRecordAudio" type="button">
+        <span class="ag-action-icon">♫</span><strong>Grabar<br>un saludo</strong>
+      </button>
+    </section>
+
+    <input id="agFileInput" type="file" accept="image/jpeg,image/png,image/webp,video/mp4,video/quicktime,video/webm" hidden>
+    <input id="agCameraPhotoInput" type="file" accept="image/*" capture="user" hidden>
+
+    <section class="ag-composer" id="agComposer" hidden>
+      <div class="ag-composer-head">
+        <h2 id="agComposerTitle">Comparte tu recuerdo</h2>
+        <button id="agComposerClose" type="button" aria-label="Cerrar">×</button>
+      </div>
+      <div id="agComposerBody"></div>
+      <p class="ag-status" id="agComposerStatus" role="status" aria-live="polite"></p>
+    </section>
+
+    <section class="ag-private-note">
+      <p class="ag-eyebrow">UN RECUERDO PARA COMPARTIR</p>
+      <h2>Tu recuerdo llegará a los novios</h2>
+      <p>Las fotografías que compartas aparecerán en la galería para que todos puedan verlas. Los videos, mensajes y saludos de voz se guardarán en el álbum privado de Abril &amp; Ricardo.</p>
+      <span>Gracias por formar parte de su historia.</span>
+      <p id="agPrivateNoteStatus" class="ag-private-note-status" role="status" aria-live="polite">Los novios podrán ver lo que compartas en su panel privado.</p>
+    </section>
+
+    <footer class="ag-footer">
+      <p>Con cariño, Abril &amp; Ricardo · 5 de agosto de 2027</p>
+      <a class="ag-footer-link" href="galeria-fiesta.html">‹ Regresar a la galería de recuerdos</a>
+      <a class="ag-footer-link" href="index.html?skipEnvelope=1#inicio">‹ Volver a la invitación</a>
+    </footer>
+  </main>
+
+  <div class="ag-camera-modal" id="agCameraModal" hidden>
+    <div class="ag-camera-dialog" role="dialog" aria-modal="true" aria-labelledby="agCameraTitle">
+      <div class="ag-composer-head">
+        <h2 id="agCameraTitle">Toma tu foto</h2>
+        <button id="agCameraClose" type="button" aria-label="Cerrar cámara">×</button>
+      </div>
+      <div class="ag-camera-view"><video id="agCameraVideo" autoplay playsinline muted></video></div>
+      <button class="ag-submit" id="agCaptureButton" type="button">CAPTURAR FOTO</button>
+      <button class="ag-camera-file-button" id="agCameraFileButton" type="button">ELEGIR DEL CELULAR</button>
+      <p class="ag-status" id="agCameraStatus" role="status" aria-live="polite"></p>
+    </div>
+  </div>
+
+  <script src="js/photo-booth-config.js"></script>
+  <script src="js/shared-gallery.js" defer></script>
+</body>
+</html>
