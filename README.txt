@@ -172,3 +172,19 @@ ACTUALIZACIÓN V22 — MINIATURAS Y SALUDOS IDENTIFICADOS
 - El reproductor de voz se reemplazó por un control propio con botón reproducir/pausar, onda visual, avance y duración; se eliminó el iframe negro de Google Drive.
 - Los audios anteriores a esta versión no tienen autor asociado y se muestran como “Invitado”.
 - Para activar las miniaturas y guardar autores de audio, hay que actualizar AppsScript/Code.gs y desplegar una nueva versión de la implementación existente. La URL /exec no cambia.
+
+
+ACTUALIZACIÓN V23 — PANEL PRIVADO DE LOS NOVIOS
+- Se agregó al final de index.html un acceso discreto “PANEL DE LOS NOVIOS”.
+- album-recuerdos.html ahora muestra un inicio de sesión y oculta el dashboard hasta autenticación correcta.
+- La contraseña `abril12345` se valida en Apps Script y no se publica en los archivos JS/HTML.
+- El servidor genera un token de sesión de 6 horas; list, thumbnail y media requieren ese token.
+- Los archivos nuevos se guardan privados; al listar el álbum, el backend intenta retirar el acceso público por enlace de los archivos existentes.
+- El panel muestra fotos con miniaturas, visor propio y descarga; no manda al visitante a una ventana de Drive.
+- Los audios se obtienen como Data URL autenticada y se reproducen con el reproductor visual dentro de su tarjeta; no usa iframe de Drive.
+- Los videos se cargan dentro de un reproductor HTML5 del panel.
+- El enlace público al álbum se retiró de la página de subida para invitados. Los invitados solo envían recuerdos.
+- Las fotos, videos, mensajes y audios se consultan desde el panel privado de los novios.
+- Para activar todo, reemplazar AppsScript/Code.gs y publicar una nueva versión de la implementación web ya existente. La URL /exec se conserva.
+
+- La contraseña del panel se debe registrar en Apps Script > Configuración del proyecto > Propiedades del script, como AR_PANEL_PASSWORD. No se guarda en los archivos públicos de GitHub.

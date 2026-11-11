@@ -1,0 +1,368 @@
+*{box-sizing:border-box}
+:root{color-scheme:light}
+html{min-height:100%;background:#eee4d4}
+body{margin:0;min-height:100vh;color:#5d503e;font-family:"Cormorant Garamond",Georgia,serif}
+button,a{font:inherit}
+.ar-album-bg{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;z-index:-2}
+.ar-album-wash{position:fixed;inset:0;z-index:-1;background:rgba(247,240,228,.80);backdrop-filter:blur(1.5px)}
+.ar-album-shell{width:min(100%,620px);min-height:100vh;margin:0 auto;padding:18px 17px 38px;background:rgba(255,250,242,.24);border-left:1px solid rgba(255,255,255,.4);border-right:1px solid rgba(255,255,255,.4)}
+.ar-album-back{display:inline-flex;align-items:center;gap:7px;padding:9px 15px;border:1px solid rgba(151,124,87,.26);border-radius:30px;background:rgba(255,252,247,.91);color:#806c50;text-decoration:none;font:10px "Marcellus",Georgia,serif;box-shadow:0 4px 12px rgba(68,52,34,.08)}
+.ar-album-header{text-align:center;padding:26px 8px 24px}
+.ar-album-eyebrow{margin:0 0 8px;color:#9a8059;font:9px "Marcellus",Georgia,serif;letter-spacing:.22em}
+.ar-album-header h1{margin:0;color:#66513c;font:clamp(42px,11vw,54px)/1.08 "Cormorant Garamond",Georgia,serif;font-weight:500}
+.ar-album-header h1 span{color:#a68b63;font-style:italic}
+.ar-album-subtitle{max-width:390px;margin:8px auto 0;color:#89785f;font-size:17px;line-height:1.35}
+.ar-album-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;max-width:440px;margin:22px auto 0;padding:14px 11px;border:1px solid rgba(255,255,255,.76);border-radius:18px;background:rgba(255,251,244,.68);box-shadow:0 7px 18px rgba(82,64,42,.07)}
+.ar-album-stats div{display:flex;flex-direction:column;gap:4px}
+.ar-album-stats strong{color:#69573f;font:28px/1 "Cormorant Garamond",Georgia,serif}
+.ar-album-stats span{color:#9a8566;font:8px "Marcellus",Georgia,serif;letter-spacing:.11em}
+.ar-album-panel{padding:19px 16px 16px;border:1px solid rgba(255,255,255,.86);border-radius:22px;background:rgba(255,252,247,.83);box-shadow:0 12px 30px rgba(78,58,38,.10);backdrop-filter:blur(8px)}
+.ar-album-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.ar-album-toolbar .ar-album-eyebrow{margin-bottom:5px}
+.ar-album-toolbar h2{margin:0;color:#65533f;font:clamp(27px,7.4vw,35px)/1.05 "Cormorant Garamond",Georgia,serif;font-weight:500}
+.ar-album-refresh{display:grid;place-items:center;flex:0 0 40px;width:40px;height:40px;border:1px solid rgba(143,119,83,.28);border-radius:50%;background:#fffaf2;color:#80694d;font-size:22px;cursor:pointer}
+.ar-album-filters{display:flex;gap:7px;overflow-x:auto;padding:16px 0 12px;scrollbar-width:none}
+.ar-album-filters::-webkit-scrollbar{display:none}
+.ar-album-filters button{display:flex;align-items:center;gap:7px;flex:0 0 auto;min-height:35px;padding:7px 12px;border:1px solid rgba(145,122,88,.26);border-radius:20px;background:rgba(255,255,255,.68);color:#74634a;font:9px "Marcellus",Georgia,serif;letter-spacing:.035em;cursor:pointer}
+.ar-album-filters button span{display:grid;place-items:center;min-width:19px;height:19px;padding:0 4px;border-radius:12px;background:rgba(147,126,92,.12);font:10px Georgia,serif}
+.ar-album-filters button.is-active{border-color:#766247;background:#766247;color:#fffaf2}
+.ar-album-filters button.is-active span{background:rgba(255,255,255,.18);color:#fff}
+.ar-album-status{min-height:18px;margin:0 0 10px;color:#8a785f;font:11px "Marcellus",Georgia,serif}
+.ar-album-status.is-error{color:#a74f42}
+.ar-album-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
+.ar-album-empty{grid-column:1/-1;display:flex;align-items:center;justify-content:center;flex-direction:column;min-height:205px;padding:25px 17px;border:1px dashed rgba(153,129,93,.32);border-radius:17px;background:rgba(255,255,255,.53);text-align:center}
+.ar-album-empty>span{color:#c49a7b;font-size:35px}
+.ar-album-empty h3{margin:8px 0 3px;color:#756047;font:italic 23px "Cormorant Garamond",Georgia,serif;font-weight:500}
+.ar-album-empty p{max-width:260px;margin:0;color:#918069;font-size:15px;line-height:1.3}
+.ar-album-card{min-width:0;overflow:hidden;border:1px solid rgba(255,255,255,.92);border-radius:15px;background:#fffdf9;box-shadow:0 6px 16px rgba(71,53,35,.10)}
+.ar-album-media{display:block;width:100%;aspect-ratio:1/1;object-fit:cover;background:#e9dfd2;cursor:zoom-in}
+.ar-album-video{display:block;width:100%;aspect-ratio:1/1;border:0;background:#181612}
+.ar-album-audio{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;min-height:145px;padding:14px;background:linear-gradient(145deg,#f1e5d7,#fffaf1);color:#785c43}
+.ar-album-audio span{font-size:31px}
+.ar-album-audio iframe{width:100%;height:68px;border:0;background:transparent}
+.ar-album-message{display:flex;align-items:center;justify-content:center;min-height:154px;padding:19px 14px;background:linear-gradient(145deg,#f4e7d9,#fffaf2);color:#715b46;text-align:center;font:italic 21px/1.28 "Cormorant Garamond",Georgia,serif;overflow-wrap:anywhere;white-space:pre-wrap}
+.ar-album-private{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;min-height:150px;padding:17px;background:#f3ece1;color:#977f60;text-align:center;font-size:14px}
+.ar-album-private strong{color:#815a47;font:11px "Marcellus",Georgia,serif}
+.ar-album-meta{display:flex;align-items:center;justify-content:space-between;gap:7px;padding:9px 10px;color:#8c795e;font:8px "Marcellus",Georgia,serif}
+.ar-album-meta span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ar-album-meta a{flex:0 0 auto;color:#75563d;text-decoration:underline;text-underline-offset:3px}
+.ar-album-fallback{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;min-height:145px;padding:14px;background:#f1e8db;color:#8a7559;text-align:center;font-size:13px}
+.ar-album-fallback a{color:#745239;text-decoration:underline}
+.ar-album-updated{margin:14px 0 0;color:#9b896f;text-align:center;font:9px "Marcellus",Georgia,serif;letter-spacing:.04em}
+.ar-album-footer{padding:29px 10px 0;text-align:center;color:#8b775a}
+.ar-album-footer p{margin:0 0 5px;font:italic 20px "Cormorant Garamond",Georgia,serif}
+.ar-album-footer span{font:8px "Marcellus",Georgia,serif;letter-spacing:.12em}
+.ar-album-lightbox[hidden]{display:none}
+.ar-album-lightbox{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;padding:18px;background:rgba(22,20,17,.93);backdrop-filter:blur(8px)}
+.ar-album-lightbox>button{position:absolute;top:16px;right:17px;width:43px;height:43px;border:1px solid rgba(255,255,255,.6);border-radius:50%;background:rgba(255,255,255,.1);color:white;font-size:29px;cursor:pointer}
+.ar-album-lightbox img{max-width:100%;max-height:88svh;object-fit:contain}
+@media(min-width:560px){.ar-album-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.ar-album-panel{padding:22px}.ar-album-stats{max-width:470px}}
+@media(max-width:360px){.ar-album-shell{padding-left:12px;padding-right:12px}.ar-album-panel{padding:15px 11px}.ar-album-grid{gap:8px}.ar-album-filters{gap:5px}.ar-album-filters button{padding:7px 10px}}
+
+
+/* Miniaturas ligeras obtenidas desde Drive */
+.ar-album-media {
+  cursor: zoom-in;
+  transition: opacity .22s ease, transform .22s ease;
+}
+.ar-album-media.is-loading {
+  min-height: 150px;
+  opacity: .45;
+  background: linear-gradient(110deg,#eee4d7 8%,#f8f1e7 18%,#eee4d7 33%);
+  background-size: 200% 100%;
+}
+.ar-album-media:not(.is-loading) { opacity: 1; }
+.ar-album-media:hover { transform: scale(1.015); }
+
+/* Reproductor de voz propio: evita el iframe negro de Google Drive */
+.ar-album-card:has(.ar-audio-card) { padding: 0; }
+.ar-audio-card {
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  min-height:150px;
+  padding:14px 12px 12px;
+  background:linear-gradient(145deg,#fffaf0,#f2eadb);
+}
+.ar-audio-heading {
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  gap:3px;
+  padding:0 2px;
+}
+.ar-audio-title {
+  color:#9b845e;
+  font:8px "Marcellus",Georgia,serif;
+  letter-spacing:.17em;
+}
+.ar-audio-author {
+  max-width:100%;
+  overflow:hidden;
+  color:#69543e;
+  font:italic 18px/1.1 "Cormorant Garamond",Georgia,serif;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.ar-audio-player {
+  display:flex;
+  align-items:center;
+  gap:9px;
+  width:100%;
+  min-height:51px;
+  padding:7px 9px;
+  border:1px solid rgba(255,255,255,.75);
+  border-radius:15px;
+  background:#e8ebd6;
+  box-shadow:inset 0 1px 2px rgba(83,87,61,.08);
+}
+.ar-audio-play {
+  display:grid;
+  place-items:center;
+  flex:0 0 34px;
+  width:34px;
+  height:34px;
+  border:0;
+  border-radius:50%;
+  background:#737957;
+  color:#fffdf5;
+  font:15px Arial,sans-serif;
+  cursor:pointer;
+  box-shadow:0 3px 7px rgba(67,73,47,.2);
+}
+.ar-audio-wave {
+  position:relative;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:2px;
+  flex:1 1 auto;
+  min-width:0;
+  height:35px;
+  overflow:hidden;
+  padding:0 1px;
+  border:0;
+  background:transparent;
+  cursor:pointer;
+}
+.ar-audio-wave i {
+  position:relative;
+  z-index:0;
+  display:block;
+  flex:1 1 2px;
+  max-width:4px;
+  min-width:2px;
+  border-radius:4px;
+  background:#9a9b7b;
+  opacity:.9;
+  transition:background .12s ease;
+}
+.ar-audio-wave i.is-played { background:#596542; }
+.ar-audio-time {
+  flex:0 0 auto;
+  min-width:57px;
+  color:#71694f;
+  font:9px "Marcellus",Georgia,serif;
+  text-align:right;
+  white-space:nowrap;
+}
+.ar-audio-card audio { display:none; }
+.ar-audio-fallback {
+  display:block;
+  margin:0 2px;
+  color:#875f46;
+  font:11px "Marcellus",Georgia,serif;
+  text-decoration:underline;
+  text-underline-offset:3px;
+}
+.ar-audio-card.has-audio-error .ar-audio-time { color:#986b50; }
+.ar-album-full-view {
+  width:min(100%,1000px);
+  height:86svh;
+  border:0;
+  border-radius:8px;
+  background:#f5eee4;
+}
+.ar-album-open-original {
+  position:absolute;
+  left:50%;
+  bottom:14px;
+  transform:translateX(-50%);
+  padding:10px 16px;
+  border:1px solid rgba(255,255,255,.35);
+  border-radius:24px;
+  background:rgba(47,40,31,.82);
+  color:#fffaf1;
+  font:10px "Marcellus",Georgia,serif;
+  text-decoration:none;
+  white-space:nowrap;
+}
+.ar-album-lightbox { flex-direction:column; gap:12px; }
+
+
+/* Acceso privado para Abril y Ricardo */
+[hidden] { display:none !important; }
+.ar-panel-login-shell {
+  width:min(100%,520px);
+  min-height:100svh;
+  margin:0 auto;
+  padding:20px 18px;
+  display:flex;
+  flex-direction:column;
+}
+.ar-panel-login-card {
+  width:100%;
+  max-width:390px;
+  margin:auto;
+  padding:30px 24px 27px;
+  border:1px solid rgba(255,255,255,.9);
+  border-radius:25px;
+  background:rgba(255,251,244,.91);
+  box-shadow:0 18px 44px rgba(77,57,36,.14);
+  text-align:center;
+  backdrop-filter:blur(12px);
+}
+.ar-panel-login-card h1 {
+  margin:0;
+  color:#66513c;
+  font:clamp(38px,10vw,49px)/1.05 "Cormorant Garamond",Georgia,serif;
+  font-weight:500;
+}
+.ar-panel-login-card h1 span { color:#a68b63;font-style:italic; }
+.ar-panel-login-intro {
+  margin:8px 0 0;
+  color:#88775e;
+  font:italic 18px "Cormorant Garamond",Georgia,serif;
+}
+.ar-panel-lock {
+  display:grid;
+  place-items:center;
+  width:55px;
+  height:55px;
+  margin:23px auto;
+  border:1px solid rgba(160,136,98,.3);
+  border-radius:50%;
+  background:linear-gradient(145deg,#fffdf8,#eee3d2);
+  color:#917756;
+  font-size:27px;
+  box-shadow:0 6px 15px rgba(80,61,39,.09);
+}
+#arPanelLoginForm { display:flex;flex-direction:column;gap:10px;text-align:left; }
+#arPanelLoginForm label {
+  color:#806b4d;
+  font:10px "Marcellus",Georgia,serif;
+  letter-spacing:.12em;
+}
+#arPanelPassword {
+  width:100%;
+  min-height:49px;
+  padding:12px 14px;
+  border:1px solid rgba(145,122,87,.3);
+  border-radius:12px;
+  outline:none;
+  background:#fffefa;
+  color:#5b4b37;
+  font:16px "Cormorant Garamond",Georgia,serif;
+}
+#arPanelPassword:focus { border-color:#907a57;box-shadow:0 0 0 3px rgba(144,122,87,.12); }
+.ar-panel-login-button {
+  width:100%;
+  min-height:49px;
+  margin-top:5px;
+  border:0;
+  border-radius:28px;
+  background:#766247;
+  color:#fffaf2;
+  font:600 10px "Marcellus",Georgia,serif;
+  letter-spacing:.13em;
+  cursor:pointer;
+}
+.ar-panel-login-button:disabled { opacity:.65;cursor:wait; }
+.ar-panel-login-status {
+  min-height:20px;
+  margin:12px 0 0;
+  color:#8b785e;
+  font:14px "Cormorant Garamond",Georgia,serif;
+}
+.ar-panel-login-status.is-error { color:#a74f42; }
+.ar-panel-private-bar {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  margin:14px 0 0;
+  padding:10px 12px;
+  border:1px solid rgba(255,255,255,.8);
+  border-radius:13px;
+  background:rgba(255,251,244,.64);
+  color:#8d785a;
+  font:8px "Marcellus",Georgia,serif;
+  letter-spacing:.12em;
+}
+.ar-panel-private-bar span { display:flex;align-items:center;gap:7px; }
+.ar-panel-private-bar i { width:7px;height:7px;border-radius:50%;background:#7c805c;box-shadow:0 0 0 3px rgba(124,128,92,.12); }
+.ar-panel-private-bar button {
+  padding:6px 9px;
+  border:1px solid rgba(143,119,83,.25);
+  border-radius:16px;
+  background:rgba(255,255,255,.65);
+  color:#806a4d;
+  font:8px "Marcellus",Georgia,serif;
+  cursor:pointer;
+}
+.ar-album-toolbar-actions { display:flex;align-items:center;gap:8px; }
+
+/* Reproductor embebido: el audio se reproduce en esta misma tarjeta, sin iframe de Drive. */
+.ar-audio-card {
+  min-height:136px;
+  background:transparent;
+  border:0;
+  box-shadow:none;
+}
+.ar-audio-player {
+  border:1px solid rgba(255,255,255,.8);
+  background:linear-gradient(135deg,#e7ebd4,#f2f0df);
+}
+.ar-audio-play { flex:0 0 36px;width:36px;height:36px; }
+.ar-audio-wave { touch-action:pan-y; }
+.ar-audio-card audio { display:none !important; }
+.ar-audio-card.has-audio-error .ar-audio-time { color:#a45f4e; }
+.ar-audio-author { font-size:19px; }
+.ar-video-card {
+  display:flex;
+  flex-direction:column;
+  gap:9px;
+  min-height:145px;
+  padding:12px;
+  background:linear-gradient(145deg,#f3eadd,#fffaf2);
+}
+.ar-video-card video { display:none;width:100%;border-radius:9px;background:#171513; }
+.ar-video-card.is-loaded video { display:block; }
+.ar-video-load {
+  min-height:42px;
+  border:1px solid rgba(133,111,77,.27);
+  border-radius:22px;
+  background:#766247;
+  color:#fffaf2;
+  font:9px "Marcellus",Georgia,serif;
+  letter-spacing:.07em;
+}
+.ar-video-card p { margin:0;color:#86745a;font:13px "Cormorant Garamond",Georgia,serif;text-align:center; }
+.ar-album-full-image { max-width:min(95vw,1100px);max-height:82svh;object-fit:contain;border-radius:7px; }
+.ar-album-loading-full { color:#fffaf2;text-align:center;font:17px "Cormorant Garamond",Georgia,serif; }
+.ar-album-full-actions { display:flex;justify-content:center;margin:8px 0 0; }
+.ar-album-full-actions button {
+  min-height:43px;padding:10px 19px;border:1px solid rgba(255,255,255,.5);border-radius:24px;
+  background:#766247;color:#fffaf2;font:9px "Marcellus",Georgia,serif;letter-spacing:.1em;
+}
+.ar-album-download {
+  padding:0;border:0;background:transparent;color:#75563d;font:8px "Marcellus",Georgia,serif;
+  text-decoration:underline;text-underline-offset:3px;cursor:pointer;
+}
+.ar-album-download:disabled { opacity:.6; }
+.ar-album-lightbox { overflow:auto; }
+.ar-album-lightbox #arAlbumLightboxContent { display:flex;flex-direction:column;align-items:center;justify-content:center;gap:13px;width:100%; }
+@media(max-width:360px) {
+  .ar-panel-login-card { padding:26px 18px 23px; }
+  .ar-panel-private-bar { font-size:7px; }
+}
